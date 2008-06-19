@@ -39,6 +39,8 @@ mu --expression 'let {p x y f = f x y; f x = p x x} in f (f (f (f (f (f (f (f (f
 mu --module Data.List --module System.IO.Unsafe --module Control.Monad --expression 1+1
 mu --module System.IO.Unsafe --expression "let foo = unsafePerformIO readFile \"/etc/passwd\" in foo"
 mu --module Data.List --module Text.HTML.Download --expression "head [1..]"
+### Can we bypass the whitelisting by fully qualified module names?
+mu --expression "Foreign.unsafePerformIO (readFile \"/etc/passwd\")"
 ## We need a bunch of IO tests, but I guess this will do for now.
 mu --expression "let foo = readFile \"/etc/passwd\" >>= print in foo"
 mu --expression "writeFile \"tmp.txt\" \"foo bar\""
