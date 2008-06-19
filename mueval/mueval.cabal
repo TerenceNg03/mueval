@@ -17,6 +17,7 @@ description:         Mueval is a Haskell interpreter. It
                      evaluation functionality.)
                      .
                      Mueval is currently POSIX-only.
+homepage:            http://code.haskell.org/mubot/
 
 build-type:          Simple
 Cabal-Version:       >= 1.2
