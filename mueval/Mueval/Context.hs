@@ -1,6 +1,14 @@
-module Mueval.Context (cleanModules, defaultModules) where
+module Mueval.Context (cleanModules, defaultModules, unsafed) where
 
-import Data.List (elem)
+import Data.List (elem, isInfixOf)
+
+{- | Return true if the String contains anywhere in it any keywords associated
+   with dangerous functions. Unfortunately, this blacklist leaks like a sieve
+   and will return many false positives (eg. unsafed "id \"unsafed\""). But it
+   will at least catch naive and simplistic invocations of "unsafePerformIO",
+   "inlinePerformIO", and "unsafeCoerce". -}
+unsafed :: String -> Bool
+unsafed = \z -> any (`isInfixOf` z) ["unsafe", "inlinePerform", "liftIO", "Coerce"]
 
 -- | Return false if any of the listed modules cannot be found in the whitelist.
 cleanModules :: [String] -> Bool
