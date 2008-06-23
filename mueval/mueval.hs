@@ -12,7 +12,7 @@ import System.Environment (getArgs)
 import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
 import System.Posix.Signals (sigXCPU, installHandler, Handler(CatchOnce))
 
-import qualified Mueval.Context (cleanModules)
+import qualified Mueval.Context (cleanModules, unsafed)
 import Mueval.Interpreter
 import Mueval.ParseArgs
 import qualified Mueval.Resources (limitResources)
@@ -21,15 +21,17 @@ main :: IO ()
 main = do input <- getArgs
           (opts,_) <- interpreterOpts input
           if (Mueval.Context.cleanModules $ modules opts) then do
-              mvar <- newEmptyMVar
+              if (not $ Mueval.Context.unsafed $ expression opts) then do
+                                               mvar <- newEmptyMVar
 
-              Mueval.Resources.limitResources
-              myThreadId >>= watchDog (timeLimit opts)
+                                               Mueval.Resources.limitResources
+                                               myThreadId >>= watchDog (timeLimit opts)
 
-              forkIO $ forkedMain (mvar) opts
-              takeMVar mvar -- block until a ErrorCall or the forkedMain succeeds
+                                               forkIO $ forkedMain (mvar) opts
+                                               takeMVar mvar -- block until a ErrorCall or the forkedMain succeeds
 
-              return ()
+                                               return ()
+               else error "Unsafe functions to use mentioned."
            else error "Unknown or untrusted module supplied! Aborting."
 
 -- Set a watchdog, and then evaluate.
