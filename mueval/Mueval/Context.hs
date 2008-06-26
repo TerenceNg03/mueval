@@ -4,11 +4,15 @@ import Data.List (elem, isInfixOf)
 
 {- | Return true if the String contains anywhere in it any keywords associated
    with dangerous functions. Unfortunately, this blacklist leaks like a sieve
-   and will return many false positives (eg. unsafed "id \"unsafed\""). But it
+   and will return many false positives (eg. unsafed "id \"unsafed\"" -> True). But it
    will at least catch naive and simplistic invocations of "unsafePerformIO",
    "inlinePerformIO", and "unsafeCoerce". -}
 unsafed :: String -> Bool
-unsafed = \z -> any (`isInfixOf` z) ["unsafe", "inlinePerform", "liftIO", "Coerce"]
+unsafed = \z -> any (`isInfixOf` z) ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
+                                    "Typeable", "Array", "IOBase", "Handle", "ByteString",
+                                    "Editline", "GLUT", "lock", "ObjectIO", "System.Time",
+                                    "OpenGL", "Control.Concurrent", "System.Posix",
+                                    "throw", "Dyn", "cache", "stdin", "stdout", "stderr"]
 
 -- | Return false if any of the listed modules cannot be found in the whitelist.
 cleanModules :: [String] -> Bool
