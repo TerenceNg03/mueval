@@ -9,6 +9,8 @@ import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports,
 import Control.Monad.Trans (liftIO)
 import System.Exit (exitWith, ExitCode(ExitFailure))
 
+import qualified Mueval.Resources (limitResources)
+
 say :: String -> Interpreter ()
 say = liftIO . putStr . take 1024
 
@@ -23,6 +25,9 @@ interpreter prt modules expr = do setUseLanguageExtensions False -- Don't trust 
                                                        -- more programs terminate.
                                   reset -- Make sure nothing is available
                                   setImports modules
+
+                                  liftIO Mueval.Resources.limitResources
+
                                   checks <- typeChecks expr
                                   if checks then do
                                               if prt then do say =<< typeOf expr

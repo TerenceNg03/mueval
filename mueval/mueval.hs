@@ -15,7 +15,6 @@ import System.Posix.Signals (sigXCPU, installHandler, Handler(CatchOnce))
 import qualified Mueval.Context (cleanModules, unsafed)
 import Mueval.Interpreter
 import Mueval.ParseArgs
-import qualified Mueval.Resources (limitResources)
 
 main :: IO ()
 main = do input <- getArgs
@@ -24,7 +23,6 @@ main = do input <- getArgs
               if (not $ Mueval.Context.unsafed $ expression opts) then do
                                                mvar <- newEmptyMVar
 
-                                               Mueval.Resources.limitResources
                                                myThreadId >>= watchDog (timeLimit opts)
 
                                                forkIO $ forkedMain (mvar) opts

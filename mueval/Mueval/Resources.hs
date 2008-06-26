@@ -25,14 +25,14 @@ stackSizeLimitHard = zero
 -- doesn't seem to be security problem because it'll be opened at the module
 -- stage, before code ever evaluates.
 openFilesLimitSoft = openFilesLimitHard
-openFilesLimitHard = ResourceLimit 7
+openFilesLimitHard = ResourceLimit 8
 fileSizeLimitSoft = fileSizeLimitHard
 fileSizeLimitHard = zero
 dataSizeLimitSoft = dataSizeLimitHard
-dataSizeLimitHard = ResourceLimit $ 5^(12::Int)
+dataSizeLimitHard = ResourceLimit $ 6^(12::Int)
 -- These should not be identical, to give the XCPU handler time to trigger
-cpuTimeLimitSoft = ResourceLimit 3
-cpuTimeLimitHard = ResourceLimit 4
+cpuTimeLimitSoft = ResourceLimit 4
+cpuTimeLimitHard = ResourceLimit 5
 coreSizeLimitSoft = coreSizeLimitHard
 coreSizeLimitHard = zero
 zero = ResourceLimit 0
