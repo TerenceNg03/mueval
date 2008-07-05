@@ -16,15 +16,6 @@ description:         Mueval is a Haskell interpreter. It
                      on to sandbox the Haskell code. (It is much like Lambdabot's famous
                      evaluation functionality.)
                      .
-                     Currently there is a major hole in Mueval: it is possible use a function
-                     without importing it, which allows the module whitelisting to be bypassed,
-                     and hence, unsafePerformIO and its various type-breaking friends can be used
-                     to do arbitrary things. Mueval uses a blacklist to avoid the most naive and obvious
-                     dangerous function imports, but this is a very weak mechanism and cannot be relied
-                     upon.
-                     .
-                     Until this hole is fixed, Mueval should *not* be used on potentially hostile input.
-                     .
                      Mueval is currently POSIX-only.
 homepage:            http://code.haskell.org/mubot/
 
