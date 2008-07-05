@@ -18,16 +18,20 @@ totalMemoryLimitSoft, totalMemoryLimitHard, stackSizeLimitSoft, stackSizeLimitHa
  dataSizeLimitHard, cpuTimeLimitSoft, cpuTimeLimitHard, coreSizeLimitSoft, coreSizeLimitHard, zero :: ResourceLimit
 totalMemoryLimitSoft = dataSizeLimitSoft
 totalMemoryLimitHard = dataSizeLimitHard
--- These limits seem to be useless
+-- These limits seem to be useless?
 stackSizeLimitSoft = zero
 stackSizeLimitHard = zero
 -- We allow one file to be opened, package.conf, because it is necessary. This
 -- doesn't seem to be security problem because it'll be opened at the module
--- stage, before code ever evaluates.
+-- stage, before code ever evaluates. I hope.
 openFilesLimitSoft = openFilesLimitHard
-openFilesLimitHard = ResourceLimit 8
-fileSizeLimitSoft = fileSizeLimitHard
-fileSizeLimitHard = zero
+openFilesLimitHard = ResourceLimit 7
+-- TODO: It would be nice to set these to zero, but right now Hint gets around the
+-- insecurity of the GHC API by writing stuff out to a file in /tmp, so we need
+-- to allow our compiled binary to do file I/O... :( But at least we can limit
+-- how much we write out!
+fileSizeLimitSoft = ResourceLimit 350
+fileSizeLimitHard = ResourceLimit 500
 dataSizeLimitSoft = dataSizeLimitHard
 dataSizeLimitHard = ResourceLimit $ 6^(12::Int)
 -- These should not be identical, to give the XCPU handler time to trigger
