@@ -2,8 +2,8 @@
 module Mueval.Interpreter (interpreterSession, printInterpreterError, ModuleName) where
 
 import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports,
-                                         setOptimizations, setUseLanguageExtensions, typeChecks,
-                                         typeOf, withSession,
+                                         setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
+                                                         typeChecks, typeOf, withSession,
                                          Interpreter, InterpreterError, ModuleName, Optimizations(All))
 
 import Control.Monad.Trans (liftIO)
@@ -19,16 +19,17 @@ printInterpreterError e = do putStrLn $ take 1024 $ "Oops... " ++ (show e)
                              (exitWith $ ExitFailure 1)
 
 interpreter :: Bool -> [ModuleName] -> String -> Interpreter ()
-interpreter prt modules expr = do setUseLanguageExtensions False -- Don't trust the
+interpreter prt modules expr = do
+                                  setUseLanguageExtensions False -- Don't trust the
                                                                  -- extensions
                                   setOptimizations All -- Maybe optimization will make
                                                        -- more programs terminate.
                                   reset -- Make sure nothing is available
+                                  setInstalledModsAreInScopeQualified False
                                   setImports modules
 
-                                  liftIO Mueval.Resources.limitResources
-
                                   checks <- typeChecks expr
+                                  liftIO Mueval.Resources.limitResources
                                   if checks then do
                                               if prt then do say =<< typeOf expr
                                                              say "\n"
