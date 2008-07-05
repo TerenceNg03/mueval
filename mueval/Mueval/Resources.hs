@@ -30,8 +30,8 @@ openFilesLimitHard = ResourceLimit 7
 -- insecurity of the GHC API by writing stuff out to a file in /tmp, so we need
 -- to allow our compiled binary to do file I/O... :( But at least we can limit
 -- how much we write out!
-fileSizeLimitSoft = ResourceLimit 350
-fileSizeLimitHard = ResourceLimit 500
+fileSizeLimitSoft = fileSizeLimitHard
+fileSizeLimitHard = ResourceLimit 590
 dataSizeLimitSoft = dataSizeLimitHard
 dataSizeLimitHard = ResourceLimit $ 6^(12::Int)
 -- These should not be identical, to give the XCPU handler time to trigger
