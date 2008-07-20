@@ -1,6 +1,7 @@
-module Mueval.ParseArgs (Options(..), interpreterOpts) where
+module Mueval.ParseArgs (Options(..), interpreterOpts, getOptions) where
 
 import System.Console.GetOpt
+import System.Environment (getArgs)
 
 import Mueval.Context (defaultModules)
 
@@ -42,3 +43,9 @@ interpreterOpts argv =
           (o,n,[]) -> return (foldl (flip id) defaultOptions o, n)
           (_,_,er) -> ioError $ userError (concat er ++ usageInfo header options)
       where header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
+
+-- | Just give us the end result options; this handles I/O and parsing for us.
+getOptions :: IO Options
+getOptions = do input <- getArgs
+                (opts,_) <- interpreterOpts $ input
+                return opts
