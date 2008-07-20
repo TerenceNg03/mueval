@@ -1,4 +1,4 @@
-module Mueval.Context (cleanModules, defaultModules, unsafed) where
+module Mueval.Context (cleanModules, defaultModules, unsafe) where
 
 import Data.List (elem, isInfixOf)
 
@@ -7,8 +7,8 @@ import Data.List (elem, isInfixOf)
    and will return many false positives (eg. unsafed "id \"unsafed\"" -> True). But it
    will at least catch naive and simplistic invocations of "unsafePerformIO",
    "inlinePerformIO", and "unsafeCoerce". -}
-unsafed :: String -> Bool
-unsafed = \z -> any (`isInfixOf` z) ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
+unsafe :: String -> Bool
+unsafe = \z -> any (`isInfixOf` z) ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
                                     "Typeable", "Array", "IOBase", "Handle", "ByteString",
                                     "Editline", "GLUT", "lock", "ObjectIO", "System.Time",
                                     "OpenGL", "Control.Concurrent", "System.Posix",
