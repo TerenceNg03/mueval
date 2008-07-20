@@ -60,4 +60,5 @@ watchDog tout tid = do installHandler sigXCPU
                                    throwTo tid (ErrorCall "Time limit exceeded")
                                    yield -- give the other thread a chance
                                    killThread tid -- Die now, srsly.
+                                   error "Time expired"
                        return ()
