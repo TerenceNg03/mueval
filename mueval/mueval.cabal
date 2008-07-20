@@ -26,7 +26,7 @@ Tested-with:         GHC==6.8.2
 Extra-source-files:  build.sh, tests.sh
 
 Library
-        exposed-modules:     Mueval.Context, Mueval.Interpreter,
+        exposed-modules:     Mueval.Concurrent, Mueval.Context, Mueval.Interpreter,
                              Mueval.ParseArgs, Mueval.Resources
         build-Depends:       base, directory, mtl, unix, hint>=0.2.3, show
         ghc-options:         -Wall -static
