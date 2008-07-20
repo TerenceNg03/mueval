@@ -1,5 +1,4 @@
--- TODO: Currently we usually exit successfully even when there was a
--- problem. Need to sort out the exit code business.
+-- TODO:
 -- Need to add user switching. Perhaps using seteuid and setegid? See
 -- <http://www.opengroup.org/onlinepubs/009695399/functions/seteuid.html> &
 -- <http://www.opengroup.org/onlinepubs/009695399/functions/setegid.html>
