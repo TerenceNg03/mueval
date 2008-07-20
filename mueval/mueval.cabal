@@ -32,6 +32,6 @@ Library
         ghc-options:         -Wall -static
 
 Executable mueval
-           main-is:       mueval.hs
+           main-is:       main.hs
            build-depends: base
            ghc-options:   -Wall -threaded -static
