@@ -16,7 +16,7 @@ description:         Mueval is a Haskell interpreter. It
                      on to sandbox the Haskell code.
                      .
                      It is, in short, intended to be a standalone version of Lambdabot's famous
-                     evaluation functionality.
+                     evaluation functionality. For examples and explanations, please see the README file.
                      .
                      Mueval is currently POSIX-only.
 homepage:            http://code.haskell.org/mubot/
