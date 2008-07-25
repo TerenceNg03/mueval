@@ -3,7 +3,7 @@ module Mueval.Concurrent where
 import Control.Concurrent   (forkIO, killThread, myThreadId, threadDelay, throwTo, yield, ThreadId)
 import System.Posix.Signals (sigXCPU, installHandler, Handler(CatchOnce))
 import Control.Exception (catchDyn, Exception(ErrorCall))
-import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar)
+import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar, MVar)
 import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
 
 import Mueval.Interpreter
@@ -23,20 +23,25 @@ watchDog tout tid = do installHandler sigXCPU
                        return () -- Never reached. Either we error out in
                                  -- watchDog, or the evaluation thread finishes.
 
--- | Set a 'watchDog' on this thread, and then continue on with whatever.
+-- | A basic blocking operation.
+block :: (t -> MVar a -> IO t1) -> t -> IO a
+block f opts = do  mvar <- newEmptyMVar
+                   f opts mvar
+                   takeMVar mvar -- block until ErrorCall, or forkedMain succeeds
+
+-- | Using MVars, block on forkedMain' until it finishes.
 forkedMain :: Options -> IO ()
-forkedMain opts = do
-  mvar <- newEmptyMVar
+forkedMain opts = block forkedMain' opts >> return ()
 
-  myThreadId >>= watchDog tout
+-- | Set a 'watchDog' on this thread, and then continue on with whatever.
+forkedMain' :: Options -> MVar [Char] -> IO ThreadId
+forkedMain' opts mvar = do myThreadId >>= watchDog tout
+                           hSetBuffering stdout NoBuffering
 
-  hSetBuffering stdout NoBuffering
-
-  -- Our modules and expression are set up. Let's do stuff.
-  forkIO (interpreterSession typeprint mdls expr `catchDyn` (printInterpreterError) >> putMVar mvar "Done.")
-
-  takeMVar mvar -- block until ErrorCall, or forkedMain succeeds
-  return ()
+                      -- Our modules and expression are set up. Let's do stuff.
+                           forkIO (interpreterSession typeprint mdls expr
+                                                     `catchDyn` (printInterpreterError)
+                                                                    >> putMVar mvar "Done.")
           where mdls = modules opts
                 expr = expression opts
                 tout = timeLimit opts
