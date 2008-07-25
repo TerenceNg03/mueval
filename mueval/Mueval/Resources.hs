@@ -5,7 +5,7 @@ import System.Posix.Resource -- (Resource(..), ResourceLimits, setResourceLimit)
 import System.Directory (setCurrentDirectory)
 
 -- | Pull together several methods of reducing priority and easy access to resources:
---   nice, rlimits, and "cd".
+--   'nice', the rlimit bindings, and "setCurrentDirectory".
 limitResources :: IO ()
 limitResources = do setCurrentDirectory "/tmp" -- will at least mess up relative links
                     nice 19 -- Set our process priority way down
@@ -21,14 +21,14 @@ totalMemoryLimitHard = dataSizeLimitHard
 -- These limits seem to be useless?
 stackSizeLimitSoft = zero
 stackSizeLimitHard = zero
--- We allow one file to be opened, package.conf, because it is necessary. This
+-- We allow a few files to be opened, such as package.conf, because they are necessary. This
 -- doesn't seem to be security problem because it'll be opened at the module
 -- stage, before code ever evaluates. I hope.
 openFilesLimitSoft = openFilesLimitHard
 openFilesLimitHard = ResourceLimit 7
 -- TODO: It would be nice to set these to zero, but right now Hint gets around the
 -- insecurity of the GHC API by writing stuff out to a file in /tmp, so we need
--- to allow our compiled binary to do file I/O... :( But at least we can limit
+-- to allow our compiled binary to do file I/O... :( But at least we can still limit
 -- how much we write out!
 fileSizeLimitSoft = fileSizeLimitHard
 fileSizeLimitHard = ResourceLimit 590

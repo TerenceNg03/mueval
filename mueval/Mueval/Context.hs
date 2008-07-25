@@ -4,7 +4,8 @@ import Data.List (elem, isInfixOf)
 
 {- | Return true if the String contains anywhere in it any keywords associated
    with dangerous functions. Unfortunately, this blacklist leaks like a sieve
-   and will return many false positives (eg. unsafed "id \"unsafed\"" -> True). But it
+   and will return many false positives (eg. 'unsafed "id \"unsafed\""' will
+   evaluate to True, even though the phrase \"unsafe\" appears only in a String). But it
    will at least catch naive and simplistic invocations of "unsafePerformIO",
    "inlinePerformIO", and "unsafeCoerce". -}
 unsafe :: String -> Bool

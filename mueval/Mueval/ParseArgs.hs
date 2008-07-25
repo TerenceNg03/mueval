@@ -5,6 +5,7 @@ import System.Environment (getArgs)
 
 import Mueval.Context (defaultModules)
 
+-- | See the results of --help for information on what each option means.
 data Options = Options
  { timeLimit :: Int
    , modules :: [String]

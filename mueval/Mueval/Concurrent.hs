@@ -9,7 +9,7 @@ import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
 import Mueval.Interpreter
 import Mueval.ParseArgs
 
--- | Fork off a thread which will sleep and kill off another thread at some point.
+-- | Fork off a thread which will sleep and then kill off the specified thread.
 watchDog :: Int -> ThreadId -> IO ()
 watchDog tout tid = do installHandler sigXCPU
                                           (CatchOnce
@@ -23,11 +23,9 @@ watchDog tout tid = do installHandler sigXCPU
                        return () -- Never reached. Either we error out in
                                  -- watchDog, or the evaluation thread finishes.
 
--- | Set a watchdog on this thread, and then evaluate.
+-- | Set a 'watchDog' on this thread, and then continue on with whatever.
 forkedMain :: Options -> IO ()
 forkedMain opts = do
-  -- This *should* be redundant with the previous watchDog,
-  -- but maybe not.
   mvar <- newEmptyMVar
 
   myThreadId >>= watchDog tout
