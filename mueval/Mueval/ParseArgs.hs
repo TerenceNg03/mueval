@@ -23,7 +23,7 @@ defaultOptions = Options { expression = ""
 
 options :: [OptDescr (Options -> Options)]
 options = [Option ['p']     ["password"]
-                      (ReqArg (\u opts -> opts {user = u}) "PASS")
+                      (ReqArg (\u opts -> opts {user = u}) "PASSWORD")
                       "The password for the mubot account. If this is set, mueval will attempt to setuid to the mubot user. This is optional, as it requires the mubot user to be set up properly. (Currently a null-op.)",
            Option ['t']     ["timelimit"]
                       (ReqArg (\t opts -> opts { timeLimit = (read t :: Int) }) "TIME")
@@ -32,11 +32,11 @@ options = [Option ['p']     ["password"]
                       (ReqArg (\m opts -> opts { modules = m:(modules opts) }) "MODULE")
                       "A module we should import functions from for evaluation. (Can be given multiple times.)",
            Option ['e']     ["expression"]
-                      (ReqArg (\e opts -> opts { expression = e}) "EXPR")
+                      (ReqArg (\e opts -> opts { expression = e}) "EXPRESSION")
                       "The expression to be evaluated.",
-           Option ['p']     ["print-type"]
+           Option ['i']     ["inferred-type"]
                       (NoArg (\opts -> opts { printType = True}))
-                      "Whether to enable printing of inferred type." ]
+                      "Whether to enable printing of inferred type. Defaults to false." ]
 
 interpreterOpts :: [String] -> IO (Options, [String])
 interpreterOpts argv =
