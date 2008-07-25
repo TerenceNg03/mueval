@@ -1,0 +1,53 @@
+WHAT:
+Mueval grew out of my discontent with Lambdabot: it's really neat to be able to run expressions like this:
+
+07:53 < ivanm> > filter (\ x -> isLetter x || x == '\t') "asdf$#$     dfs"
+07:55 < lambdabot>  "asdfdfs"
+
+But Lambdabot is crufty and very difficult to install or run. IMO, we need a replacement or rewrite, but one of the things that make this difficult is that Lambdabot uses hs-plugins to get that sort of evaluation functionality, and hs-plugins is half the problem. We want some sort of standalone executable which provides that functionality. Now, 'ghc -e' is obviously unsuited because there is no sandboxing, so what I've done is basically marry the GHC API (as rendered less sharp-edged by Hint) with a bunch of resource limits and sandboxing (as largely stolen from Lambdabot).
+
+EXAMPLES:
+The end result is an adorable little program, which you can use like this:
+
+ bash-3.2$ mueval --expression '1*100+1'
+ Expression type: (Num t) => t
+ result: "101"
+
+ bash-3.2$ mueval --expression "filter (\`notElem\` ['A'..'Z']) \"abcXsdzWEE\""
+ Expression type: [Char]
+ result: "\"abcsdz\""
+
+Note that mueval will avoid all the attacks I've been able to test on it:
+
+ bash-3.2$ mueval --expression 'let x = x in x'
+ Expression type: t
+ result: "mueval: Time limit exceeded
+
+ bash-3.2$ mueval --expression "let foo = readFile \"/etc/passwd\" >>= print in foo"
+ Expression type: IO ()
+ result: "<IO ()>"
+
+ bash-3.2$ mueval --module System.IO.Unsafe --expression "let foo = unsafePerformIO readFile \"/etc/passwd\" in foo"
+ mueval: Unknown or untrusted module supplied! Aborting.
+
+SUMMARY:
+Anyway, it's my hope that this will be useful as an example or useful in itself for people endeavouring to fix the Lambdabot situation or just in safely running code period.
+
+GETTING:
+You can download Mueval at the usual place: <http://hackage.haskell.org/cgi-bin/hackage-scripts/package/mueval>. Mueval has a public darcs repository, at <http://code.haskell.org/mubot/> (in the mueval/ subdirectory). Contributions are of course welcomed.
+
+INSTALLING:
+Mueval depends on a few of the standard libraries, which you should have installed already, and also on the 'Hint' library <http://hackage.haskell.org/cgi-bin/hackage-scripts/package/hint>; Hint is particularly essential as it is the very capable wrapper around the GHC API which Mueval uses. (Without Hint, this would've been even more painful to write). All of this is cabalized, so ideally installation will be as simple as:
+
+ sh$ cabal install mueval
+
+However, you can still manually download and unpack the Mueval tarball, and do the usual Cabal dance:
+
+ sh$ runhaskell Setup configure
+ sh$ runhaskell Setup build
+ sh$ runhaskell Setup install
+
+BUGS:
+Mueval uses a number of techniques for security; particularly problematic seem to be the resource limits, as they have to be specified manually & statically in the source code and so will probably be broken somewhere somewhen. If you can successfully build &install Mueval, but running it on expressions leads to errors, please send me an email at <gwern0@gmail.com>. Include in the email all the output you see if you run the informal test suite:
+
+ sh$ sh tests.sh

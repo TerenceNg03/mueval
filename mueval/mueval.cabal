@@ -1,5 +1,5 @@
 name:                mueval
-version:             0.4.5
+version:             0.4.6
 
 license:             BSD3
 license-file:        LICENSE
@@ -22,10 +22,11 @@ description:         Mueval is a Haskell interpreter. It
 homepage:            http://code.haskell.org/mubot/
 
 build-type:          Simple
-Cabal-Version:       >= 1.2
-Tested-with:         GHC==6.8.2
+cabal-version:       >= 1.2
+tested-with:         GHC==6.8.2
 
-Extra-source-files:  build.sh, tests.sh
+data-files:          README
+extra-source-files:  build.sh, tests.sh
 
 Library
         exposed-modules:     Mueval.Concurrent, Mueval.Context, Mueval.Interpreter,
