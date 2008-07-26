@@ -2,7 +2,7 @@
 # tests
 
 # Save typing
-m () { mueval --expression "$@"; }
+m () { mueval --inferred-type --expression "$@"; }
 # Redefine a failed command to be successful
 mf () { m "$@" || return 0; }
 
