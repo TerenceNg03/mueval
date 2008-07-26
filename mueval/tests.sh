@@ -26,6 +26,12 @@ m 'map toUpper "foobar"' --module Data.List --module Data.Char --module Control.
 m 'tail $ take 50 $ repeat "foo"' --module Data.List --timelimit 3
 ## This tests whether the SimpleReflect stuff is working. Output should be: "(f 1 (f 2 (f 3 (f 4 (f 5 z)))))\"
 m 'foldr (\x y -> concat ["(f ",x," ",y,")"]) "z" (map show [1..5])'
+## Test 1024-char limit
+m 'repeat 1'
+## Let's see whether the ShowQ instances for QuickCheck work
+m 'myquickcheck (1+1 == 2)' -E
+m 'myquickcheck (\x -> x == x)' -E
+
 
 # Test on bad or outright evil expressions
 echo "\n Now let's test various misbehaved expressions \n" &&
