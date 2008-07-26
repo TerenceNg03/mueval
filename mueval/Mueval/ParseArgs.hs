@@ -12,6 +12,7 @@ data Options = Options
    , expression :: String
    , user :: String
    , printType :: Bool
+   , extensions :: Bool
  } deriving Show
 
 defaultOptions :: Options
@@ -19,7 +20,8 @@ defaultOptions = Options { expression = ""
                            , modules = defaultModules
                            , timeLimit = 5
                            , user = ""
-                           , printType = False }
+                           , printType = False
+                           , extensions = False }
 
 options :: [OptDescr (Options -> Options)]
 options = [Option ['p']     ["password"]
@@ -31,6 +33,9 @@ options = [Option ['p']     ["password"]
            Option ['m']     ["module"]
                       (ReqArg (\m opts -> opts { modules = m:(modules opts) }) "MODULE")
                       "A module we should import functions from for evaluation. (Can be given multiple times.)",
+           Option ['E']     ["Extensions"]
+                      (NoArg (\opts -> opts { extensions = True}))
+                      "Whether to enable the Glasgow extensions to Haskell '98. Defaults to false, but enabling is useful for QuickCheck.",
            Option ['e']     ["expression"]
                       (ReqArg (\e opts -> opts { expression = e}) "EXPRESSION")
                       "The expression to be evaluated.",

@@ -27,10 +27,10 @@ printInterpreterError = error . take 1024 . ("Oops... " ++) . show
    optimizations, hide all packages, make sure one cannot call unimported
    functions, typecheck (and optionally print it), set resource limits for this
    thread, and do some error handling. -}
-interpreter :: Bool -> [ModuleName] -> String -> Interpreter ()
-interpreter prt modules expr = do
-                                  setUseLanguageExtensions False -- Don't trust the
-                                                                 -- extensions
+interpreter :: Bool -> Bool -> [ModuleName] -> String -> Interpreter ()
+interpreter prt exts modules expr = do
+                                  setUseLanguageExtensions exts -- False by default
+
                                   setOptimizations All -- Maybe optimization will make
                                                        -- more programs terminate.
                                   reset -- Make sure nothing is available
@@ -50,10 +50,11 @@ interpreter prt modules expr = do
 -- | Wrapper around 'interpreter'; supplies a fresh GHC API session and
 -- error-handling. The arguments are simply passed on.
 interpreterSession :: Bool -- ^ Whether to print inferred type
+                   -> Bool -- ^ Whether to use GHC extensions
                    -> [ModuleName] -- ^ A list of modules we wish to be visible
                    -> String -- ^ The string to be interpreted as a Haskell expression
                    -> IO ()  -- ^ No real result, since printing is done deeper in
                             -- the stack.
-interpreterSession prt mds expr = Control.Exception.catch
-                                  (newSession >>= (flip withSession) (interpreter prt mds expr))
+interpreterSession prt exts mds expr = Control.Exception.catch
+                                  (newSession >>= (flip withSession) (interpreter prt exts mds expr))
                                   (\_ -> error "Expression did not compile.")

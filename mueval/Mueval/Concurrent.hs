@@ -39,10 +39,11 @@ forkedMain' opts mvar = do myThreadId >>= watchDog tout
                            hSetBuffering stdout NoBuffering
 
                       -- Our modules and expression are set up. Let's do stuff.
-                           forkIO (interpreterSession typeprint mdls expr
+                           forkIO (interpreterSession typeprint extend mdls expr
                                                      `catchDyn` (printInterpreterError)
                                                                     >> putMVar mvar "Done.")
           where mdls = modules opts
                 expr = expression opts
                 tout = timeLimit opts
                 typeprint = printType opts
+                extend = extensions opts
