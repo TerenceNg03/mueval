@@ -41,7 +41,7 @@ options = [Option ['p']     ["password"]
                       "The expression to be evaluated.",
            Option ['i']     ["inferred-type"]
                       (NoArg (\opts -> opts { printType = True}))
-                      "Whether to enable printing of inferred type. Defaults to false." ]
+                      "Whether to enable printing of inferred type and the expression (as Mueval sees it). Defaults to false." ]
 
 interpreterOpts :: [String] -> IO (Options, [String])
 interpreterOpts argv =

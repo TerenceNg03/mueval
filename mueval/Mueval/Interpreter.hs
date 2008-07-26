@@ -32,12 +32,16 @@ interpreter prt exts modules expr = do
                                   setUseLanguageExtensions exts -- False by default
 
                                   setOptimizations All -- Maybe optimization will make
-                                                       -- more programs terminate.
+                                                       -- more programs
+                                                       -- terminate.
+
                                   reset -- Make sure nothing is available
                                   setInstalledModsAreInScopeQualified False
-                                  setImports modules
 
+                                  setImports modules
+                                  if prt then say $ expr ++ "\n" else return ()
                                   checks <- typeChecks expr
+
                                   liftIO Mueval.Resources.limitResources
                                   if checks then do
                                               if prt then do say =<< typeOf expr
