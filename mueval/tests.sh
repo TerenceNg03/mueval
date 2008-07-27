@@ -29,6 +29,7 @@ m 'repeat 1'
 ## Let's see whether the ShowQ instances for QuickCheck work
 m 'myquickcheck (1+1 == 2)' -E
 m 'myquickcheck (\x -> x == x)' -E
+m 'let (ñ) = (+) in ñ 5 5'
 echo "\nOK, all the valid expressions worked out well." &&
 
 # Test on bad or outright evil expressions
