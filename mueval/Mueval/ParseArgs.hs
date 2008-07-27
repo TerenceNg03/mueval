@@ -1,7 +1,11 @@
 module Mueval.ParseArgs (Options(..), interpreterOpts, getOptions) where
 
+import Control.Monad (liftM)
 import System.Console.GetOpt
 import System.Environment (getArgs)
+
+import qualified System.IO.UTF8 as UTF (putStr)
+import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 
 import Mueval.Context (defaultModules)
 
@@ -50,8 +54,9 @@ interpreterOpts argv =
           (_,_,er) -> ioError $ userError (concat er ++ usageInfo header options)
       where header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
 
--- | Just give us the end result options; this handles I/O and parsing for us.
+-- | Just give us the end result options; this handles I/O and parsing for
+-- us. Bonus points for handling UTF.
 getOptions :: IO Options
-getOptions = do input <- getArgs
+getOptions = do input <- liftM (map Codec.decodeString) getArgs
                 (opts,_) <- interpreterOpts $ input
                 return opts

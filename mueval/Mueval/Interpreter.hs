@@ -6,8 +6,11 @@ import qualified Control.Exception (catch)
 
 import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports,
                                          setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
-                                                         typeChecks, typeOf, withSession,
+                                         typeChecks, typeOf, withSession,
                                          Interpreter, InterpreterError, ModuleName, Optimizations(All))
+
+import qualified Codec.Binary.UTF8.String as Codec (decodeString)
+import qualified System.IO.UTF8 as UTF (putStr)
 
 import qualified Mueval.Resources (limitResources)
 
@@ -15,7 +18,7 @@ import qualified Mueval.Resources (limitResources)
 -- of interpreting something), but only print the first 1024 characters to avoid
 -- flooding. Lambdabot has a similar limit.
 say :: String -> Interpreter ()
-say = liftIO . putStr . take 1024
+say = liftIO . UTF.putStr . Codec.decodeString . take 1024
 
 -- | Oh no, something has gone wrong. Call 'error' and then, as with 'say',
 -- print out a maximum of 1024 characters.
@@ -40,9 +43,11 @@ interpreter prt exts modules expr = do
 
                                   setImports modules
                                   if prt then say $ expr ++ "\n" else return ()
-                                  checks <- typeChecks expr
 
                                   liftIO Mueval.Resources.limitResources
+
+                                  checks <- typeChecks expr
+
                                   if checks then do
                                               if prt then do say =<< typeOf expr
                                                              say "\n"
