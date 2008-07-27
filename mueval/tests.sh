@@ -3,8 +3,6 @@
 
 # Save typing
 m () { mueval --inferred-type --expression "$@"; }
-# Redefine a failed command to be successful
-mf () { m "$@" || return 0; }
 
 # Abort if any commands aren't successful
 set -e
@@ -31,30 +29,30 @@ m 'repeat 1'
 ## Let's see whether the ShowQ instances for QuickCheck work
 m 'myquickcheck (1+1 == 2)' -E
 m 'myquickcheck (\x -> x == x)' -E
-
+echo "\nOK, all the valid expressions worked out well." &&
 
 # Test on bad or outright evil expressions
-echo "\n Now let's test various misbehaved expressions \n" &&
+echo "Now let's test various misbehaved expressions \n" &&
 ## test infinite loop
-mf 'let x = x in x'
-mf 'let x y = x 1 in x 1' --timelimit 3
-mf 'let x = x + 1 in x'
+m 'let x = x in x' ||
+m 'let x y = x 1 in x 1' --timelimit 3 ||
+m 'let x = x + 1 in x' ||
 ## Similarly, but with a strict twist
-mf 'let f :: Int -> Int; f x = f $! (x+1) in f 0'
+m 'let f :: Int -> Int; f x = f $! (x+1) in f 0' ||
 ## test stack limits
-mf 'let x = 1 + x in x'
+m 'let x = 1 + x in x' ||
 ## Let's stress the time limits
-mf 'let {p x y f = f x y; f x = p x x} in f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f f)))))))))))))))))) f'
+m 'let {p x y f = f x y; f x = p x x} in f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f f)))))))))))))))))) f' ||
 ## Now let's test the module whitelisting
-mf 1+1 --module Data.List --module System.IO.Unsafe --module Control.Monad
-mf "let foo = unsafePerformIO readFile \"/etc/passwd\" in foo" --module System.IO.Unsafe
-mf "head [1..]" --module Data.List --module Text.HTML.Download
+m 1+1 --module Data.List --module System.IO.Unsafe --module Control.Monad ||
+m "let foo = unsafePerformIO readFile \"/etc/passwd\" in foo" --module System.IO.Unsafe ||
+m "head [1..]" --module Data.List --module Text.HTML.Download ||
 ### Can we bypass the whitelisting by fully qualified module names?
-mf "Foreign.unsafePerformIO $ readFile \"/etc/passwd\""
-mf "Data.ByteString.Internal.inlinePerformIO $ readFile \"/etc/passwd\""
+m "Foreign.unsafePerformIO $ readFile \"/etc/passwd\"" ||
+m "Data.ByteString.Internal.inlinePerformIO $ readFile \"/etc/passwd\"" ||
 ## We need a bunch of IO tests, but I guess this will do for now.
-mf "let foo = readFile \"/etc/passwd\" >>= print in foo"
-mf "writeFile \"tmp.txt\" \"foo bar\""
+m "let foo = readFile \"/etc/passwd\" >>= print in foo" ||
+m "writeFile \"tmp.txt\" \"foo bar\"" ||
 ## Evil array code, should fail (but not with a segfault!)
-mf  "array (0::Int, maxBound) [(1000000,'x')]" --module Data.Array
+m  "array (0::Int, maxBound) [(1000000,'x')]" --module Data.Array ||
 echo "Done, apparently successfully"
