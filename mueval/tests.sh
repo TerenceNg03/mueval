@@ -30,14 +30,14 @@ m 'repeat 1'
 ## Let's see whether the ShowQ instances for QuickCheck work
 m 'myquickcheck (1+1 == 2)' -E
 m 'myquickcheck (\x -> x == x)' -E
-m 'myquickcheck \x -> (x :: String) == x' -E
+m 'myquickcheck (\x -> (x :: String) == x)' -E
 m 'myquickcheck  (\x y -> (fromInteger x == (fromInteger y::Double)) ==> x == y)' -E
 ## Test SmallCheck using examples from #haskell
 m 'mysmallcheck True' -E
 m 'mysmallcheck (\a b -> (a != b) == (a /= (b :: Int)))' -E
-m 'mysmallcheck \x -> x < (10000::Int)' -E
-m 'mysmallcheck join (&&)' -E
-m 'mysmallcheck \x -> not x || x' -E
+m 'mysmallcheck (\x -> x < (10000::Int))' -E
+m 'mysmallcheck (join (&&))' -E
+m 'mysmallcheck (\x -> not x || x)' -E
 ## Test Unicode. If this fails, characters got mangled somewhere.
 m 'let (ñ) = (+) in ñ 5 5'
 echo "\nOK, all the valid expressions worked out well." &&
