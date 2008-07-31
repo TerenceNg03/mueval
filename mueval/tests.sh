@@ -9,8 +9,9 @@ set -e
 # Test on valid expressions. Note we conditionalize - all of these should return successfully.
 echo "Test some valid expressions \n"
 ## Does anything work?
-m '1*100+1'
+m 'False'
 ## OK, let's try some simple math.
+m '1*100+1'
 m '(1*100) +1+1' --module Control.Monad
 ## String processing
 m "filter (\`notElem\` ['A'..'Z']) \"abcXsdzWEE\""
