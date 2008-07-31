@@ -4,7 +4,6 @@ import Control.Monad (liftM)
 import System.Console.GetOpt
 import System.Environment (getArgs)
 
-import qualified System.IO.UTF8 as UTF (putStr)
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 
 import Mueval.Context (defaultModules)
