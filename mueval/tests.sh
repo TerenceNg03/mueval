@@ -37,6 +37,13 @@ m 'mysmallcheck (\x -> x < (10000::Int))' -E
 m 'mysmallcheck (\x -> not x || x)' -E
 ## Test Unicode. If this fails, characters got mangled somewhere.
 m 'let (ñ) = (+) in ñ 5 5'
+## Now let's do file loading
+echo "module TmpModule (foo, bar) where\nfoo x = x + 1 \nbar x = x + 2" > "TmpModule.hs"
+m '1+1' --loadfile="TmpModule.hs"
+m 'foo 1' --loadfile="TmpModule.hs"
+m 'bar 1' --loadfile="TmpModule.hs"
+m 'foo $ foo 1' --loadfile="TmpModule.hs"
+rm "TmpModule.hs"
 echo "\nOK, all the valid expressions worked out well." &&
 
 # Test on bad or outright evil expressions
