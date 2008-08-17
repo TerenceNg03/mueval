@@ -13,6 +13,7 @@ data Options = Options
  { timeLimit :: Int
    , modules :: [String]
    , expression :: String
+   , loadFile :: String
    , user :: String
    , printType :: Bool
    , extensions :: Bool
@@ -23,6 +24,7 @@ defaultOptions = Options { expression = ""
                            , modules = defaultModules
                            , timeLimit = 5
                            , user = ""
+                           , loadFile = ""
                            , printType = False
                            , extensions = False }
 
@@ -33,6 +35,11 @@ options = [Option ['p']     ["password"]
            Option ['t']     ["timelimit"]
                       (ReqArg (\t opts -> opts { timeLimit = (read t :: Int) }) "TIME")
                       "Time limit for compilation and evaluation",
+
+           Option ['l']     ["loadfile"]
+                      (ReqArg (\e opts -> opts { loadFile = e}) "FILE")
+                      "A local file for Mueval to load, providing definitions. Contents are trusted! Do not put anything dubious in it!",
+
            Option ['m']     ["module"]
                       (ReqArg (\m opts -> opts { modules = m:(modules opts) }) "MODULE")
                       "A module we should import functions from for evaluation. (Can be given multiple times.)",
