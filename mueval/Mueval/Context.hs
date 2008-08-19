@@ -24,18 +24,11 @@ cleanModules = and . map (`elem` safeModules)
    crippled; we want SimpleReflect so we can do neat things (for said neat
    things, see
    <http://twan.home.fmf.nl/blog/haskell/simple-reflection-of-expressions.details>);
-   and we want ShowQ and ShowFun to neuter IO stuff even more. -}
+   and we want ShowQ and ShowFun to neuter IO stuff even more.
+   The rest should be safe to import without clashes, according to the Lambdabot
+   sources. -}
 defaultModules :: [String]
-defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function"]
-
--- | Borrowed from Lambdabot, this is the whitelist of modules which should be
---   safe to import functions from.
-safeModules :: [String]
-safeModules = defaultModules ++ ["Control.Applicative",
-               "Control.Arrow",
-               "Control.Arrow.Operations",
-               "Control.Arrow.Transformer",
-               "Control.Arrow.Transformer.All",
+defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function",
                "Control.Monad",
                "Control.Monad.Cont",
                "Control.Monad.Error",
@@ -53,26 +46,16 @@ safeModules = defaultModules ++ ["Control.Applicative",
                "Data.Array",
                "Data.Bits",
                "Data.Bool",
-               "Data.ByteString",
-               "Data.ByteString.Char8",
-               "Data.ByteString.Lazy",
-               "Data.ByteString.Lazy.Char8",
                "Data.Char",
                "Data.Complex",
                "Data.Dynamic",
                "Data.Either",
                "Data.Eq",
                "Data.Fixed",
-               "Data.Foldable",
-               "Data.Generics",
-               "Data.Generics",
                "Data.Graph",
                "Data.Int",
-               "Data.IntMap",
-               "Data.IntSet",
                "Data.Ix",
                "Data.List",
-               "Data.Map",
                "Data.Maybe",
                "Data.Monoid",
                "Data.Number.BigFloat",
@@ -84,9 +67,6 @@ safeModules = defaultModules ++ ["Control.Applicative",
                "Data.Number.Symbolic",
                "Data.Ord",
                "Data.Ratio",
-               "Data.Sequence",
-               "Data.Set",
-               "Data.Traversable",
                "Data.Tree",
                "Data.Tuple",
                "Data.Typeable",
@@ -96,3 +76,32 @@ safeModules = defaultModules ++ ["Control.Applicative",
                "Test.QuickCheck",
                "Text.PrettyPrint.HughesPJ",
                "Text.Printf"]
+
+{- | Borrowed from Lambdabot, this is the whitelist of modules which should be
+   safe to import functions from, but which we don't want to import by
+   default.
+   FIXME: make these qualified imports. The GHC API & Hint currently do not
+   support qualified imports.
+   WARNING: You can import these with --module, certainly, but the onus is on
+   the user to make sure they fully disambiguate function names; ie:
+
+   > mueval  --module Data.Map -e "Prelude.map (+1) [1..100]"
+-}
+safeModules :: [String]
+safeModules = defaultModules ++ ["Control.Applicative",
+               "Control.Arrow",
+               "Control.Arrow.Operations",
+               "Control.Arrow.Transformer",
+               "Control.Arrow.Transformer.All",
+               "Data.ByteString",
+               "Data.ByteString.Char8",
+               "Data.ByteString.Lazy",
+               "Data.ByteString.Lazy.Char8",
+               "Data.Foldable",
+               "Data.Generics",
+               "Data.IntMap",
+               "Data.IntSet",
+               "Data.Map",
+               "Data.Sequence",
+               "Data.Set",
+               "Data.Traversable"]
