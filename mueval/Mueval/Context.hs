@@ -26,7 +26,7 @@ cleanModules = and . map (`elem` safeModules)
    <http://twan.home.fmf.nl/blog/haskell/simple-reflection-of-expressions.details>);
    and we want ShowQ and ShowFun to neuter IO stuff even more. -}
 defaultModules :: [String]
-defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect"]
+defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function"]
 
 -- | Borrowed from Lambdabot, this is the whitelist of modules which should be
 --   safe to import functions from.
@@ -64,7 +64,6 @@ safeModules = defaultModules ++ ["Control.Applicative",
                "Data.Eq",
                "Data.Fixed",
                "Data.Foldable",
-               "Data.Function",
                "Data.Generics",
                "Data.Generics",
                "Data.Graph",
