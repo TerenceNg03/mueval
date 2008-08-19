@@ -70,7 +70,7 @@ interpreter prt exts modules lfl expr = do
                                                              say "\n"
                                                else return ()
                                               result <- eval expr
-                                              say $ show result ++ "\n"
+                                              say $ result ++ "\n"
                                     else error "Expression did not type check."
 
 -- | Wrapper around 'interpreter'; supplies a fresh GHC API session and
