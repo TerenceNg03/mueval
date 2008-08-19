@@ -9,7 +9,7 @@ set -e
 # Test on valid expressions. Note we conditionalize - all of these should return successfully.
 echo "Test some valid expressions \n"
 ## Does anything work?
-m 'False'
+m 'True'
 ## OK, let's try some simple math.
 m '1*100+1'
 m '(1*100) +1+1' --module Control.Monad
@@ -37,6 +37,20 @@ m 'mysmallcheck (\x -> x < (10000::Int))' -E
 m 'mysmallcheck (\x -> not x || x)' -E
 ## Test Unicode. If this fails, characters got mangled somewhere.
 m 'let (ñ) = (+) in ñ 5 5'
+## Test default imports & have some function fun
+m 'fix (1:)'
+m 'fix show'
+m 'let fix f = let x = f x in x in fix show'
+m '(+1) . (*2) $ 10'
+m 'fmap fix return 42'
+m 'filterM (const [False,True]) [1,2,3]'
+m 'sequence [[1,2,3],[4,5]]'
+m 'sort [4,6,1,2,3]'
+m 'runIdentity $ mfix (return . (0:) . scanl (+) 1)'
+m 'fix ((1:).(1:).(zipWith (+) `ap` tail))'
+m 'runST (return 0)'
+## Test defaulting of expressions
+m 'show []' -E
 ## Now let's do file loading
 echo "module TmpModule (foo, bar) where\nfoo x = x + 1 \nbar x = x + 2" > "TmpModule.hs"
 m '1+1' --loadfile="TmpModule.hs"
@@ -54,14 +68,16 @@ m 'let x y = x 1 in x 1' --timelimit 3 ||
 m 'let x = x + 1 in x' ||
 ## Similarly, but with a strict twist
 m 'let f :: Int -> Int; f x = f $! (x+1) in f 0' ||
-## test stack limits
+## test stack overflow limits
 m 'let x = 1 + x in x' ||
+m 'let fix f = let x = f x in x in foldr (.) id (repeat read) $ fix show' ||
 ## Let's stress the time limits
 m 'let {p x y f = f x y; f x = p x x} in f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f f)))))))))))))))))) f' ||
 ## Now let's test the module whitelisting
 m 1+1 --module Data.List --module System.IO.Unsafe --module Control.Monad ||
 m "let foo = unsafePerformIO readFile \"/etc/passwd\" in foo" --module System.IO.Unsafe ||
 m "head [1..]" --module Data.List --module Text.HTML.Download ||
+m " runST (unsafeIOToST (readFile \"/etc/passwd\"))" ||
 ### Can we bypass the whitelisting by fully qualified module names?
 m "Foreign.unsafePerformIO $ readFile \"/etc/passwd\"" ||
 m "Data.ByteString.Internal.inlinePerformIO $ readFile \"/etc/passwd\"" ||
