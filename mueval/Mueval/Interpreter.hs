@@ -5,6 +5,7 @@ import Control.Monad (when)
 import qualified Control.Exception (catch)
 import Control.Monad.Trans (liftIO)
 import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile)
+import System.FilePath.Posix (takeFileName)
 
 import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, loadModules,
                                          setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
@@ -50,11 +51,13 @@ interpreter prt exts modules lfl expr = do
 
                                   liftIO Mueval.Resources.limitResources
 
-                                  when doload $ do loadModules [lfl]
+                                  when doload $ do
+                                                   let lfl' = takeFileName lfl
+                                                   loadModules [lfl']
                                                    -- We need to mangle the String to
                                                    -- turn a filename into a
                                                    -- module
-                                                   setTopLevelModules [(takeWhile (/='.') lfl)]
+                                                   setTopLevelModules [(takeWhile (/='.') lfl')]
 
                                   setImports modules
 
@@ -85,9 +88,9 @@ interpreterSession prt exts mds lfl expr = Control.Exception.catch
                                   (\_ -> do case lfl of
                                              "" -> return ()
                                              l  -> do canonfile <- (makeRelativeToCurrentDirectory l)
-                                                      removeFile ("/tmp/" ++ canonfile)
+                                                      removeFile ("/tmp/" ++ takeFileName canonfile)
                                             error "Expression did not compile.")
 
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- (makeRelativeToCurrentDirectory lfl)
-                liftIO $ copyFile canonfile ("/tmp/" ++ canonfile)
+                liftIO $ copyFile canonfile ("/tmp/" ++ (takeFileName canonfile))
