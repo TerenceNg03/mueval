@@ -14,7 +14,7 @@ watchDog :: Int -> ThreadId -> IO ()
 watchDog tout tid = do installHandler sigXCPU
                                           (CatchOnce
                                            $ throwTo tid $ ErrorCall "Time limit exceeded.") Nothing
-                       forkIO $ do threadDelay (tout * 1000000)
+                       forkIO $ do threadDelay (tout * 500000)
                                    -- Time's up. It's a good day to die.
                                    throwTo tid (ErrorCall "Time limit exceeded")
                                    yield -- give the other thread a chance
