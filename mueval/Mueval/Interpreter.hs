@@ -84,7 +84,8 @@ interpreterSession prt exts mds lfl expr = Control.Exception.catch
                                   (newSession >>= (flip withSession) (interpreter prt exts mds lfl expr))
                                   (\_ -> do case lfl of
                                              "" -> return ()
-                                             l  -> removeFile l
+                                             l  -> do canonfile <- (makeRelativeToCurrentDirectory l)
+                                                      removeFile ("/tmp/" ++ canonfile)
                                             error "Expression did not compile.")
 
 mvload :: FilePath -> IO ()
