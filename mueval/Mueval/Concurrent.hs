@@ -1,8 +1,9 @@
 module Mueval.Concurrent where
 
+import Prelude hiding (catch)
 import Control.Concurrent   (forkIO, killThread, myThreadId, threadDelay, throwTo, yield, ThreadId)
 import System.Posix.Signals (sigXCPU, installHandler, Handler(CatchOnce))
-import Control.Exception (catchDyn, Exception(ErrorCall))
+import Control.Exception (Exception(ErrorCall),catch)
 import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar, MVar)
 import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
 
@@ -35,13 +36,15 @@ forkedMain opts = block forkedMain' opts >> return ()
 
 -- | Set a 'watchDog' on this thread, and then continue on with whatever.
 forkedMain' :: Options -> MVar [Char] -> IO ThreadId
-forkedMain' opts mvar = do myThreadId >>= watchDog tout
+forkedMain' opts mvar = do mainId <- myThreadId 
+                           watchDog tout mainId
                            hSetBuffering stdout NoBuffering
 
                       -- Our modules and expression are set up. Let's do stuff.
-                           forkIO (interpreterSession typeprint extend mdls fls expr
-                                                     `catchDyn` (printInterpreterError)
-                                                                    >> putMVar mvar "Done.")
+                           forkIO $ (interpreterSession typeprint extend mdls fls expr 
+                                                            >> putMVar mvar "Done.") 
+                                      `catch` throwTo mainId -- bounce exceptions to the main thread, 
+                                                             -- so they are reliably printed out
           where mdls = if impq then Nothing else Just (modules opts)
                 expr = expression opts
                 tout = timeLimit opts
