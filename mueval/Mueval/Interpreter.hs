@@ -19,32 +19,6 @@ import qualified System.IO.UTF8 as UTF (putStrLn)
 
 import qualified Mueval.Resources (limitResources)
 
--- | From inside the Interpreter monad, print the String (presumably the result
--- of interpreting something), but only print the first 1024 characters to avoid
--- flooding. Lambdabot has a similar limit.
-say :: String -> Interpreter ()
-say = liftIO . sayIO
-
-sayIO :: String -> IO ()
-sayIO = UTF.putStrLn . Codec.decodeString <=< (fmap (take 1024)) . forceString . take 1024
-
--- | Oh no, something has gone wrong. If it's a compilation error prettyprint 
--- the first 1024 chars of it and throw an ExitExcetion
--- otherwise rethrow the exception in String form.
-printInterpreterError :: InterpreterError -> IO ()
-printInterpreterError (WontCompile errors) = 
-    -- if we get a compilation error we print it directly to avoid "mueval: .."
-    -- maybe it should go to stderr?
-    do sayIO $ concatMap (dropLinePosition . errMsg) errors
-       exitFailure
-    where
-      -- each error starts with the line position, which is uninteresting
-      dropLinePosition = unlines . tail . lines
--- other exceptions indicate some problem in mueval or the environment,
--- so we rethrow them for debugging purpouses
-printInterpreterError other = error (show other)
-
-
 {- | The actual calling of Hint functionality. The heart of this just calls
    'eval', but we do so much more - we disable Haskell extensions, turn on
    optimizations, hide all packages, make sure one cannot call unimported
@@ -81,11 +55,11 @@ interpreter prt exts modules lfl expr = do
                                     Just ms -> setImports ms
 
                                   when prt $ say expr
-                                  -- we don't check if the expression typechecks 
-                                  -- this way we get an InterpreterError we can display
+                                  -- we don't check if the expression typechecks
+                                  -- this way we get an "InterpreterError" we can display
                                   when prt $ say =<< typeOf expr
 
-                                  result <- eval expr 
+                                  result <- eval expr
 
                                   say $ result
 
@@ -102,18 +76,48 @@ interpreterSession :: Bool -- ^ Whether to print inferred type
 interpreterSession prt exts mds lfl expr = E.bracket newSession cleanTmpFile $ \session ->
                                   withSession session (interpreter prt exts mds lfl expr)
                                   `E.catchDyn` printInterpreterError
-    where 
+    where
       cleanTmpFile _ = case lfl of
                          "" -> return ()
                          l  -> do canonfile <- makeRelativeToCurrentDirectory l
                                   removeFile $ "/tmp/" ++ takeFileName canonfile
-                                  
+
 
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- (makeRelativeToCurrentDirectory lfl)
                 liftIO $ copyFile canonfile ("/tmp/" ++ (takeFileName canonfile))
 
--- | forces a string catching pure exceptions and displaying them like ghci, *** Excection: ...
+--------------------
+--
+
+-- | From inside the Interpreter monad, print the String (presumably the result
+-- of interpreting something), but only print the first 1024 characters to avoid
+-- flooding. Lambdabot has a similar limit.
+say :: String -> Interpreter ()
+say = liftIO . sayIO
+
+sayIO :: String -> IO ()
+sayIO = UTF.putStrLn . Codec.decodeString <=< (fmap (take 1024)) . forceString . take 1024
+
+-- | Oh no, something has gone wrong. If it's a compilation error pretty print
+-- the first 1024 chars of it and throw an "ExitException"
+-- otherwise rethrow the exception in String form.
+printInterpreterError :: InterpreterError -> IO ()
+printInterpreterError (WontCompile errors) =
+    -- if we get a compilation error we print it directly to avoid \"mueval: ...\"
+    -- maybe it should go to stderr?
+    do sayIO $ concatMap (dropLinePosition . errMsg) errors
+       exitFailure
+    where
+      -- each error starts with the line position, which is uninteresting
+      dropLinePosition = unlines . tail . lines
+-- other exceptions indicate some problem in Mueval or the environment,
+-- so we rethrow them for debugging purposes
+printInterpreterError other = error (show other)
+
+-- | Forces a string catching pure exceptions and displaying them like GHCi, ***
+--  Exception: ...
+forceString :: String -> IO String
 forceString str = do r <- fmap Right (E.evaluate (uncons str)) `E.catch` \e -> return $ Left (show e)
                      case r of
                        Left e -> return $ "*** Exception: " ++ e
