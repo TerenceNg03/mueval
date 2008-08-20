@@ -53,6 +53,13 @@ However, you can still manually download and unpack the Mueval tarball, and do t
  sh$ runhaskell Setup install
 
 BUGS:
-Mueval uses a number of techniques for security; particularly problematic seem to be the resource limits, as they have to be specified manually & statically in the source code and so will probably be broken somewhere somewhen. If you can successfully build &install Mueval, but running it on expressions leads to errors, please send me an email at <gwern0@gmail.com>. Include in the email all the output you see if you run the informal test suite:
+Mueval uses a number of techniques for security; particularly problematic seem to be the resource limits, as they have to be specified manually & statically in the source code and so will probably be broken somewhere somewhen.
+
+CONTRIBUTING:
+So, you've discovered a bug or other infelicity? If you can successfully build & install Mueval, but running it on expressions leads to errors, please send me an email at <gwern0@gmail.com>. Include in the email all the output you see if you run the informal test suite:
 
  sh$ sh tests.sh
+
+If this script *does not* terminate with a success message, then there's something wrong. One of the properties Mueval strives to have is that on every bad expression, it errors out with an exit code of 1, and on every good expression, an exit code of 0.
+
+If you have a patch handy, 'darcs send' is the best way to contribute. As above, tests.sh should be happy, as should 'cabal check'; even better is if your email is GPG-signed, but that's not as important as test.sh passing.
