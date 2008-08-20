@@ -32,9 +32,9 @@ library
         exposed-modules:     Mueval.Concurrent, Mueval.Context, Mueval.Interpreter,
                              Mueval.ParseArgs, Mueval.Resources
         build-depends:       base, directory, mtl, filepath, unix, hint>=0.2.4, show>=0.3, utf8-string
-        ghc-options:         -Wall -static
+        ghc-options:         -Wall -static -O2
 
 executable mueval
            main-is:       main.hs
            build-depends: base
-           ghc-options:   -Wall -static
+           ghc-options:   -Wall -static -O2
