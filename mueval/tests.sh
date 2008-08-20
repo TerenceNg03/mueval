@@ -49,8 +49,10 @@ m 'sort [4,6,1,2,3]'
 m 'runIdentity $ mfix (return . (0:) . scanl (+) 1)'
 m 'fix ((1:).(1:).(zipWith (+) `ap` tail))'
 m 'runST (return 0)'
+m 'map return [1,2] :: [Either String Int]'
 ## Test defaulting of expressions
 m 'show []' -E
+m '(+1) <$> [1..3]'
 ## Now let's do file loading
 echo "module TmpModule (foo, bar) where\nfoo x = x + 1 \nbar x = x + 2" > "TmpModule.hs"
 m '1+1' --loadfile="TmpModule.hs"
