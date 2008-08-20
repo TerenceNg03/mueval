@@ -29,6 +29,7 @@ cleanModules = and . map (`elem` safeModules)
    sources. -}
 defaultModules :: [String]
 defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function",
+               "Control.Applicative",
                "Control.Monad",
                "Control.Monad.Cont",
                "Control.Monad.Error",
@@ -88,7 +89,7 @@ defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function
    > mueval  --module Data.Map -e "Prelude.map (+1) [1..100]"
 -}
 safeModules :: [String]
-safeModules = defaultModules ++ ["Control.Applicative",
+safeModules = defaultModules ++ [
                "Control.Arrow",
                "Control.Arrow.Operations",
                "Control.Arrow.Transformer",
