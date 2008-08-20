@@ -17,6 +17,7 @@ data Options = Options
    , user :: String
    , printType :: Bool
    , extensions :: Bool
+   , noimports :: Bool
  } deriving Show
 
 defaultOptions :: Options
@@ -26,7 +27,8 @@ defaultOptions = Options { expression = ""
                            , user = ""
                            , loadFile = ""
                            , printType = False
-                           , extensions = False }
+                           , extensions = False
+                           , noimports = False }
 
 options :: [OptDescr (Options -> Options)]
 options = [Option ['p']     ["password"]
@@ -43,6 +45,9 @@ options = [Option ['p']     ["password"]
            Option ['m']     ["module"]
                       (ReqArg (\m opts -> opts { modules = m:(modules opts) }) "MODULE")
                       "A module we should import functions from for evaluation. (Can be given multiple times.)",
+           Option ['n']     ["noimports"]
+                      (NoArg (\opts -> opts { noimports = True}))
+                      "Whether to import any default modules, such as Prelude; this is useful if you are loading a file which, say, redefines Prelude operators.",
            Option ['E']     ["Extensions"]
                       (NoArg (\opts -> opts { extensions = True}))
                       "Whether to enable the Glasgow extensions to Haskell '98. Defaults to false, but enabling is useful for QuickCheck.",

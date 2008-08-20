@@ -58,6 +58,9 @@ m 'foo 1' --loadfile="TmpModule.hs"
 m 'bar 1' --loadfile="TmpModule.hs"
 m 'foo $ foo 1' --loadfile="TmpModule.hs"
 rm "TmpModule.hs"
+## Test the --noimports function
+## TODO: more extensive tests of this
+m '()' --noimports
 echo "\nOK, all the valid expressions worked out well." &&
 
 # Test on bad or outright evil expressions

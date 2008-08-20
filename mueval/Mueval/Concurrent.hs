@@ -42,9 +42,10 @@ forkedMain' opts mvar = do myThreadId >>= watchDog tout
                            forkIO (interpreterSession typeprint extend mdls fls expr
                                                      `catchDyn` (printInterpreterError)
                                                                     >> putMVar mvar "Done.")
-          where mdls = modules opts
+          where mdls = if impq then Nothing else Just (modules opts)
                 expr = expression opts
                 tout = timeLimit opts
                 typeprint = printType opts
                 extend = extensions opts
                 fls = loadFile opts
+                impq = noimports opts

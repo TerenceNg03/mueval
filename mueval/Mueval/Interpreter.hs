@@ -34,7 +34,7 @@ printInterpreterError = error . take 1024 . ("Oops... " ++) . show
    optimizations, hide all packages, make sure one cannot call unimported
    functions, typecheck (and optionally print it), set resource limits for this
    thread, and do some error handling. -}
-interpreter :: Bool -> Bool -> [ModuleName] -> String -> String -> Interpreter ()
+interpreter :: Bool -> Bool -> Maybe [ModuleName] -> String -> String -> Interpreter ()
 interpreter prt exts modules lfl expr = do
                                   setUseLanguageExtensions exts -- False by default
 
@@ -45,7 +45,8 @@ interpreter prt exts modules lfl expr = do
                                   reset -- Make sure nothing is available
                                   setInstalledModsAreInScopeQualified False
 
-                                  let doload = if lfl == "" then False else True
+                                  let doload = if lfl == ""
+                                                then False else True
 
                                   when doload (liftIO $ mvload lfl)
 
@@ -59,7 +60,9 @@ interpreter prt exts modules lfl expr = do
                                                    -- module
                                                    setTopLevelModules [(takeWhile (/='.') lfl')]
 
-                                  setImports modules
+                                  case modules of
+                                    Nothing -> return ()
+                                    Just ms -> setImports ms
 
                                   when prt (say $ expr ++ "\n")
 
@@ -77,7 +80,7 @@ interpreter prt exts modules lfl expr = do
 -- error-handling. The arguments are simply passed on.
 interpreterSession :: Bool -- ^ Whether to print inferred type
                    -> Bool -- ^ Whether to use GHC extensions
-                   -> [ModuleName] -- ^ A list of modules we wish to be visible
+                   -> Maybe [ModuleName] -- ^ A list of modules we wish to be visible
                    -> String -- ^ A local file from which to grab definitions; an
                             -- empty string is treated as no file.
                    -> String -- ^ The string to be interpreted as a Haskell expression
