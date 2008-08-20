@@ -1,23 +1,23 @@
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
-import Control.Monad (when,(<=<))
-import qualified Control.Exception as E (bracket,catchDyn,evaluate,catch)
+import Control.Monad (liftM)
+import Control.Monad (when, (<=<))
 import Control.Monad.Trans (liftIO)
+import Data.List (isInfixOf)
 import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile)
-import System.FilePath.Posix (takeFileName)
 import System.Exit (exitFailure)
+import System.FilePath.Posix (takeFileName)
+import qualified Control.Exception as E (bracket,catchDyn,evaluate,catch)
+
 import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, loadModules,
                                          setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
                                          typeOf, withSession, setTopLevelModules,
                                          Interpreter, InterpreterError(..),GhcError(..), ModuleName, Optimizations(All))
-
-
+import qualified Mueval.Resources (limitResources)
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 import qualified System.IO.UTF8 as UTF (putStrLn)
 
-
-import qualified Mueval.Resources (limitResources)
 
 {- | The actual calling of Hint functionality. The heart of this just calls
    'eval', but we do so much more - we disable Haskell extensions, turn on
@@ -87,8 +87,8 @@ mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- (makeRelativeToCurrentDirectory lfl)
                 liftIO $ copyFile canonfile ("/tmp/" ++ (takeFileName canonfile))
 
---------------------
---
+---------------------------------
+-- Handling and outputting results
 
 -- | From inside the Interpreter monad, print the String (presumably the result
 -- of interpreting something), but only print the first 1024 characters to avoid
@@ -97,7 +97,7 @@ say :: String -> Interpreter ()
 say = liftIO . sayIO
 
 sayIO :: String -> IO ()
-sayIO = UTF.putStrLn . Codec.decodeString <=< (fmap (take 1024)) . forceString . take 1024
+sayIO = UTF.putStrLn . Codec.decodeString <=< (fmap (take 1024)) . liftM analyzeResult . forceString . take 1024
 
 -- | Oh no, something has gone wrong. If it's a compilation error pretty print
 -- the first 1024 chars of it and throw an "ExitException"
@@ -120,8 +120,20 @@ printInterpreterError other = error (show other)
 forceString :: String -> IO String
 forceString str = do r <- fmap Right (E.evaluate (uncons str)) `E.catch` \e -> return $ Left (show e)
                      case r of
-                       Left e -> return $ "*** Exception: " ++ e
+                       Left e -> return $ exceptionMsg ++ e
                        Right Nothing -> return []
                        Right (Just (x,xs)) -> fmap (x:) $ forceString xs
     where uncons [] = Nothing
           uncons (x:xs) = x `seq` Just (x,xs)
+
+-- Constant
+exceptionMsg :: String
+exceptionMsg = "*** Exception: "
+
+-- | Analyze the output (presumably from 'forceString') and error out if an
+-- exception was present.
+-- TODO: Come up with some cleaner way of working with forceString.
+analyzeResult :: String -> String
+analyzeResult str   | exceptionMsg `isInfixOf` str = error str
+                    | str == "" = ""
+                    | otherwise = str
