@@ -7,6 +7,8 @@ import Control.Monad.Trans (liftIO)
 import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile)
 import System.FilePath.Posix (takeFileName)
 import System.Exit (exitFailure)
+import Control.Parallel.Strategies (($|), rnf)
+
 import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, loadModules,
                                          setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
                                          typeOf, withSession, setTopLevelModules,
@@ -25,23 +27,27 @@ import qualified Mueval.Resources (limitResources)
 say :: String -> Interpreter ()
 say = liftIO . sayIO
 
+-- We are careful to turn our string into UTF-8 for printing out; note also that
+-- we force the string to be fully evaluated. This is subtle: we need to force
+-- after doing the take. If we forced beforehand, 'sayIO' would break on
+-- infinite lists, which are prefect valid.
 sayIO :: String -> IO ()
-sayIO = UTF.putStrLn . Codec.decodeString . take 1024
+sayIO = UTF.putStrLn . (Codec.decodeString $| rnf) . take 1024
 
--- | Oh no, something has gone wrong. If it's a compilation error prettyprint 
--- the first 1024 chars of it and throw an ExitExcetion
+-- | Oh no, something has gone wrong. If it's a compilation error, pretty-print
+-- the first 1024 chars of it and throw an ExitException
 -- otherwise rethrow the exception in String form.
 printInterpreterError :: InterpreterError -> IO ()
-printInterpreterError (WontCompile errors) = 
+printInterpreterError (WontCompile errors) =
     -- if we get a compilation error we print it directly to avoid "mueval: .."
     -- maybe it should go to stderr?
     do sayIO $ concatMap (dropLinePosition . errMsg) errors
        exitFailure
-    where 
+    where
       -- each error starts with the line position, which is uninteresting
       dropLinePosition = unlines . tail . lines
 -- other exceptions indicate some problem in mueval or the environment,
--- so we rethrow them for debugging purpouses
+-- so we rethrow them for debugging purposes
 printInterpreterError other = error (show other)
 
 
@@ -81,11 +87,11 @@ interpreter prt exts modules lfl expr = do
                                     Just ms -> setImports ms
 
                                   when prt $ say expr
-                                  -- we don't check if the expression typechecks 
+                                  -- we don't check if the expression typechecks
                                   -- this way we get an InterpreterError we can display
                                   when prt $ say =<< typeOf expr
 
-                                  result <- eval expr 
+                                  result <- eval expr
 
                                   say $ result
 
@@ -102,12 +108,12 @@ interpreterSession :: Bool -- ^ Whether to print inferred type
 interpreterSession prt exts mds lfl expr = E.bracket newSession cleanTmpFile $ \session ->
                                   withSession session (interpreter prt exts mds lfl expr)
                                   `E.catchDyn` printInterpreterError
-    where 
+    where
       cleanTmpFile _ = case lfl of
                          "" -> return ()
                          l  -> do canonfile <- makeRelativeToCurrentDirectory l
                                   removeFile $ "/tmp/" ++ takeFileName canonfile
-                                  
+
 
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- (makeRelativeToCurrentDirectory lfl)
