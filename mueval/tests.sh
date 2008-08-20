@@ -21,6 +21,8 @@ m "filter (\`notElem\` ['A'..'Z']) \"abcXsdzWEE\""
 ## see whether we gave it enough resources to do reasonably long stuff
 m "(last \"nebbish\") : (head $ reverse \"fooo bar baz booooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooreally long strong, you must confess, at least relative to the usual string, I suppose\") : []"
 m 'let return a k = k a ; m >>= f = m . flip f ; foldM f z [] = return z ; foldM f z (x:xs) = f z x >>= \fzx -> foldM f fzx xs ; control e k = e (\a -> const (k a)) id in foldM (\p n -> if n == 0 then control (const $ return 0) else return (p * n)) 1 [-10..] id'
+## Single module
+m '()' --module=Prelude
 ## Test whether we can import multiple modules
 m 'join [[1]]' --module Data.List --module Control.Monad --module Data.Char
 m 'join ["baz"]' --module Data.List --module Data.Char --module Control.Monad
