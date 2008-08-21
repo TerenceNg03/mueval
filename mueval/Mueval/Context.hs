@@ -26,6 +26,14 @@ unsafeNames = ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
                "OpenGL", "Control.Concurrent", "System.Posix",
                "throw", "Dyn", "cache", "stdin", "stdout", "stderr"]
 
+
+-- | A Nothing indicates that the expression is well-formed and passes the
+-- blacklist; a Just "unsafe..." is exactly as it seems.
+type Result = Maybe String
+
+-- | This type indicates that haskell-src-exts simply couldn't parse the Haskell fragment.
+type ParseError = String
+
 {-
 ghci> let e = ((\(Right a)->a) . parseHsExp $ "let x = (unsafePerformIO(print())`seq`42) in x")
 ghci> listify ((==typeOf(undefined::HsName)) . typeOf) e :: [HsName]
@@ -36,10 +44,7 @@ ghci> listify ((==typeOf(undefined::HsName)) . typeOf) e :: [HsName]
 -- "Right Nothing" is the only safe result.
 -- FIXME: Experimental and probably doesn't work. Could use some clean up and
 -- better type-fu.
-checkNames :: String -> Either
-                          String          -- ^ a parse error
-                          (Maybe String)  -- ^ Nothing ==> it's all good
-                                     -- ^ Just "unsafe..." ==> it's bad
+checkNames :: String -> Either ParseError Result
 checkNames s = case parseHsExp s of
                  Left err -> Left err
                  Right expr -> Right . untilM isRascal . fmap showHsName . allHsNamesIn $ expr
