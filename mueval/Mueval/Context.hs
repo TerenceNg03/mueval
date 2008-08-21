@@ -1,6 +1,14 @@
-module Mueval.Context (cleanModules, defaultModules, unsafe) where
+module Mueval.Context (cleanModules, defaultModules, unsafe, checkNames) where
 
 import Data.List (elem, isInfixOf)
+import Language.Haskell.Exts.Syntax
+import Language.Haskell.Exts (parseModule)
+import Language.Haskell.Exts.Pretty (prettyPrint)
+import Language.Haskell.Exts.Parser (ParseResult(..))
+
+import Data.Set (fromList, member)
+import Data.Typeable (typeOf)
+import Data.Generics (listify)
 
 {- | Return true if the String contains anywhere in it any keywords associated
    with dangerous functions. Unfortunately, this blacklist leaks like a sieve
@@ -9,11 +17,40 @@ import Data.List (elem, isInfixOf)
    will at least catch naive and simplistic invocations of "unsafePerformIO",
    "inlinePerformIO", and "unsafeCoerce". -}
 unsafe :: String -> Bool
-unsafe = \z -> any (`isInfixOf` z) ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
-                                    "Typeable", "Array", "IOBase", "Handle", "ByteString",
-                                    "Editline", "GLUT", "lock", "ObjectIO", "System.Time",
-                                    "OpenGL", "Control.Concurrent", "System.Posix",
-                                    "throw", "Dyn", "cache", "stdin", "stdout", "stderr"]
+unsafe = \z -> any (`isInfixOf` z) unsafeNames
+
+unsafeNames :: [String]
+unsafeNames = ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
+               "Typeable", "Array", "IOBase", "Handle", "ByteString",
+               "Editline", "GLUT", "lock", "ObjectIO", "System.Time",
+               "OpenGL", "Control.Concurrent", "System.Posix",
+               "throw", "Dyn", "cache", "stdin", "stdout", "stderr"]
+
+{-
+ghci> let e = ((\(Right a)->a) . parseHsExp $ "let x = (unsafePerformIO(print())`seq`42) in x")
+ghci> listify ((==typeOf(undefined::HsName)) . typeOf) e :: [HsName]
+[HsIdent "x",HsIdent "unsafePerformIO",HsIdent "print",HsIdent "seq",HsIdent "x"]
+-}
+-- | Right Nothing is the only OK result.
+checkNames :: String -> Either
+                          String          -- ^ a parse error
+                          (Maybe String)  -- ^ Nothing ==> it's all good
+                                     -- ^ Just "unsafe..." ==> it's bad
+checkNames s = case parseHsExp s of
+                 Left err -> Left err
+                 Right expr -> Right . untilM isRascal . fmap showHsName . allHsNamesIn $ expr
+  where untilM :: (a -> Bool) -> [a] -> Maybe a
+        untilM _ [] = Nothing
+        untilM p (x:xs) = if p x
+          then Just x else untilM p xs
+        allHsNamesIn :: HsExp -> [HsName]
+        allHsNamesIn = listify ((== typeOf (undefined :: HsName)) . typeOf)
+        showHsName :: HsName -> String
+        showHsName (HsIdent a) = a
+        showHsName (HsSymbol a) = a
+        isRascal :: String -> Bool
+        isRascal = flip member (fromList unsafeNames)
+
 
 -- | Return false if any of the listed modules cannot be found in the whitelist.
 cleanModules :: [String] -> Bool
@@ -106,3 +143,59 @@ safeModules = defaultModules ++ [
                "Data.Sequence",
                "Data.Set",
                "Data.Traversable"]
+
+parseHsModule :: String -> Either String HsModule
+parseHsModule s =
+  case parseModule s of
+    ParseOk m -> Right m
+    ParseFailed loc e ->
+      let line = srcLine loc - 1
+      in Left (unlines [show line,show loc,e])
+
+parseHsDecls :: String -> Either String [HsDecl]
+parseHsDecls s =
+  let s' = unlines [pprHsModule (emptyHsModule "Main"), s]
+  in case parseModule s' of
+      ParseOk m -> Right (moduleDecls m)
+      ParseFailed loc e ->
+        let line = srcLine loc - 1
+        in Left (unlines [show line,show loc,e])
+
+parseHsExp :: String -> Either String HsExp
+parseHsExp s =
+  case parseHsDecls ("main = ("++(filter (/='\n') s)++")") of
+    Left err -> Left err
+    Right xs ->
+      case [ e | HsPatBind _ _ (HsUnGuardedRhs e) _ <- xs] of
+        []    -> Left "invalid expression"
+        (e:_) -> Right e
+
+parseHsPat :: String -> Either String HsPat
+parseHsPat s =
+  case parseHsDecls ("(" ++ (filter (/='\n') s) ++ ")=()") of
+    Left err -> Left err
+    Right xs ->
+      case [ p | HsPatBind _ p _ _ <- xs] of
+        []    -> Left "invalid pattern"
+        (p:_) -> Right p
+
+pprHsModule :: HsModule -> String
+pprHsModule = prettyPrint
+
+moduleDecls :: HsModule -> [HsDecl]
+moduleDecls (HsModule _ _ _ _ x) = x
+
+mkModule :: String -> Module
+mkModule = Module
+
+emptySrcLoc :: SrcLoc
+emptySrcLoc = (SrcLoc [] 0 0)
+
+emptyHsModule :: String -> HsModule
+emptyHsModule n =
+    (HsModule
+        emptySrcLoc
+        (mkModule n)
+        Nothing
+        []
+        [])

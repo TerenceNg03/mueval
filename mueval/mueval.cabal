@@ -31,7 +31,7 @@ extra-source-files:  build.sh, tests.sh
 library
         exposed-modules:     Mueval.Parallel, Mueval.Context, Mueval.Interpreter,
                              Mueval.ParseArgs, Mueval.Resources
-        build-depends:       base, directory, mtl, filepath, unix, hint>=0.2.4.1, show>=0.3, utf8-string
+        build-depends:       base, containers, directory, mtl, filepath, unix, hint>=0.2.4.1, show>=0.3, utf8-string, haskell-src-exts
         ghc-options:         -Wall -static -O2
 
 executable mueval
