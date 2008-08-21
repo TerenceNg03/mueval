@@ -1,4 +1,4 @@
-module Mueval.ParseArgs (Options(..), interpreterOpts, getOptions) where
+module Mueval.ArgsParse (Options(..), interpreterOpts, getOptions) where
 
 import Control.Monad (liftM)
 import System.Console.GetOpt

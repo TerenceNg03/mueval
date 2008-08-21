@@ -5,7 +5,7 @@
 module Main (main) where
 
 import Mueval.Parallel
-import Mueval.ParseArgs (getOptions, Options(..))
+import Mueval.ArgsParse (getOptions, Options(..))
 import qualified Mueval.Context (cleanModules, unsafe)
 
 main :: IO ()

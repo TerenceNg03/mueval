@@ -8,7 +8,7 @@ import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar, MVar)
 import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
 
 import Mueval.Interpreter
-import Mueval.ParseArgs
+import Mueval.ArgsParse
 
 -- | Fork off a thread which will sleep and then kill off the specified thread.
 watchDog :: Int -> ThreadId -> IO ()
