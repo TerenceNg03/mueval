@@ -10,8 +10,8 @@ set -e
 echo "Test some valid expressions \n"
 ## Does anything work?
 m 'True'
-## TODO: Test comments
-# m 'True -- testing'
+## Test comments
+m 'True -- testing'
 m 'True {- Testing -}'
 ## OK, let's try some simple math.
 m '1*100+1'
