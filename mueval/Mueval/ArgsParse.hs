@@ -61,7 +61,7 @@ options = [Option ['p']     ["password"]
                       "Whether to enable printing of inferred type and the expression (as Mueval sees it). Defaults to false.",
            Option ['r']     ["rlimits"]
                       (NoArg (\opts -> opts { rlimits = True}))
-                      "Whether to enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems." ]
+                      "Enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems." ]
 
 interpreterOpts :: [String] -> IO (Options, [String])
 interpreterOpts argv =
