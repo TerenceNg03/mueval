@@ -18,6 +18,7 @@ data Options = Options
    , printType :: Bool
    , extensions :: Bool
    , noimports :: Bool
+   , rlimits :: Bool
  } deriving Show
 
 defaultOptions :: Options
@@ -28,7 +29,8 @@ defaultOptions = Options { expression = ""
                            , loadFile = ""
                            , printType = False
                            , extensions = False
-                           , noimports = False }
+                           , noimports = False
+                           , rlimits = False }
 
 options :: [OptDescr (Options -> Options)]
 options = [Option ['p']     ["password"]
@@ -56,7 +58,10 @@ options = [Option ['p']     ["password"]
                       "The expression to be evaluated.",
            Option ['i']     ["inferred-type"]
                       (NoArg (\opts -> opts { printType = True}))
-                      "Whether to enable printing of inferred type and the expression (as Mueval sees it). Defaults to false." ]
+                      "Whether to enable printing of inferred type and the expression (as Mueval sees it). Defaults to false.",
+           Option ['r']     ["rlimits"]
+                      (NoArg (\opts -> opts { rlimits = True}))
+                      "Whether to enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems." ]
 
 interpreterOpts :: [String] -> IO (Options, [String])
 interpreterOpts argv =
