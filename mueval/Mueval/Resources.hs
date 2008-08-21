@@ -1,15 +1,18 @@
 module Mueval.Resources (limitResources) where
 
+import Control.Monad (when)
 import System.Posix.Process (nice)
 import System.Posix.Resource -- (Resource(..), ResourceLimits, setResourceLimit)
 import System.Directory (setCurrentDirectory)
 
 -- | Pull together several methods of reducing priority and easy access to resources:
---   'nice', the rlimit bindings, and "setCurrentDirectory".
-limitResources :: IO ()
-limitResources = do setCurrentDirectory "/tmp" -- will at least mess up relative links
-                    nice 19 -- Set our process priority way down
-                    mapM_ (uncurry setResourceLimit) limits
+--  'nice', the rlimit bindings, and "setCurrentDirectory".
+--  If called with False, 'limitResources' will not use POSIX rlimits.
+limitResources :: Bool -> IO ()
+limitResources rlimit = do setCurrentDirectory "/tmp" -- will at least mess up relative links
+                           nice 19 -- Set our process priority way down
+                           when rlimit
+                                    (mapM_ (uncurry setResourceLimit) limits)
 
 -- | Set all the available rlimits.
 --   These values have been determined through trial-and-error

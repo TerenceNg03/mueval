@@ -31,7 +31,11 @@ ghci> let e = ((\(Right a)->a) . parseHsExp $ "let x = (unsafePerformIO(print())
 ghci> listify ((==typeOf(undefined::HsName)) . typeOf) e :: [HsName]
 [HsIdent "x",HsIdent "unsafePerformIO",HsIdent "print",HsIdent "seq",HsIdent "x"]
 -}
--- | Right Nothing is the only OK result.
+-- | Parse as Haskell expression and analyze for unsafe expressions. Compared to
+-- the primitive string munging of 'unsafe', this is the Right Thing.
+-- "Right Nothing" is the only safe result.
+-- FIXME: Experimental and probably doesn't work. Could use some clean up and
+-- better type-fu.
 checkNames :: String -> Either
                           String          -- ^ a parse error
                           (Maybe String)  -- ^ Nothing ==> it's all good

@@ -41,7 +41,7 @@ forkedMain' opts mvar = do mainId <- myThreadId
                            hSetBuffering stdout NoBuffering
 
                       -- Our modules and expression are set up. Let's do stuff.
-                           forkIO $ (interpreterSession typeprint extend mdls fls expr
+                           forkIO $ (interpreterSession typeprint extend rls mdls fls expr
                                                             >> putMVar mvar "Done.")
                                       `catch` throwTo mainId -- bounce exceptions to the main thread,
                                                              -- so they are reliably printed out
@@ -52,3 +52,4 @@ forkedMain' opts mvar = do mainId <- myThreadId
                 extend = extensions opts
                 fls = loadFile opts
                 impq = noimports opts
+                rls = rlimits opts

@@ -24,8 +24,8 @@ import qualified System.IO.UTF8 as UTF (putStrLn)
    optimizations, hide all packages, make sure one cannot call unimported
    functions, typecheck (and optionally print it), set resource limits for this
    thread, and do some error handling. -}
-interpreter :: Bool -> Bool -> Maybe [ModuleName] -> String -> String -> Interpreter ()
-interpreter prt exts modules lfl expr = do
+interpreter :: Bool -> Bool -> Bool -> Maybe [ModuleName] -> String -> String -> Interpreter ()
+interpreter prt exts rlimits modules lfl expr = do
                                   setUseLanguageExtensions exts -- False by default
 
                                   setOptimizations All -- Maybe optimization will make
@@ -40,7 +40,7 @@ interpreter prt exts modules lfl expr = do
 
                                   when doload (liftIO $ mvload lfl)
 
-                                  liftIO Mueval.Resources.limitResources
+                                  liftIO $ Mueval.Resources.limitResources rlimits
 
                                   when doload $ do
                                                    let lfl' = takeFileName lfl
@@ -67,14 +67,15 @@ interpreter prt exts modules lfl expr = do
 -- error-handling. The arguments are simply passed on.
 interpreterSession :: Bool -- ^ Whether to print inferred type
                    -> Bool -- ^ Whether to use GHC extensions
+                   -> Bool -- ^ Whether to use rlimits
                    -> Maybe [ModuleName] -- ^ A list of modules we wish to be visible
                    -> String -- ^ A local file from which to grab definitions; an
                             -- empty string is treated as no file.
                    -> String -- ^ The string to be interpreted as a Haskell expression
                    -> IO ()  -- ^ No real result, since printing is done deeper in
                             -- the stack.
-interpreterSession prt exts mds lfl expr = E.bracket newSession cleanTmpFile $ \session ->
-                                  withSession session (interpreter prt exts mds lfl expr)
+interpreterSession prt exts rls mds lfl expr = E.bracket newSession cleanTmpFile $ \session ->
+                                  withSession session (interpreter prt exts rls mds lfl expr)
                                   `E.catchDyn` printInterpreterError
     where
       cleanTmpFile _ = case lfl of
