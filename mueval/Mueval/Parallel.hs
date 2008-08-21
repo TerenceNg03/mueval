@@ -1,4 +1,4 @@
-module Mueval.Concurrent where
+module Mueval.Parallel where
 
 import Prelude hiding (catch)
 import Control.Concurrent   (forkIO, killThread, myThreadId, threadDelay, throwTo, yield, ThreadId)
@@ -36,14 +36,14 @@ forkedMain opts = block forkedMain' opts >> return ()
 
 -- | Set a 'watchDog' on this thread, and then continue on with whatever.
 forkedMain' :: Options -> MVar [Char] -> IO ThreadId
-forkedMain' opts mvar = do mainId <- myThreadId 
+forkedMain' opts mvar = do mainId <- myThreadId
                            watchDog tout mainId
                            hSetBuffering stdout NoBuffering
 
                       -- Our modules and expression are set up. Let's do stuff.
-                           forkIO $ (interpreterSession typeprint extend mdls fls expr 
-                                                            >> putMVar mvar "Done.") 
-                                      `catch` throwTo mainId -- bounce exceptions to the main thread, 
+                           forkIO $ (interpreterSession typeprint extend mdls fls expr
+                                                            >> putMVar mvar "Done.")
+                                      `catch` throwTo mainId -- bounce exceptions to the main thread,
                                                              -- so they are reliably printed out
           where mdls = if impq then Nothing else Just (modules opts)
                 expr = expression opts

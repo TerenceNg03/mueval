@@ -4,10 +4,9 @@
 -- <http://www.opengroup.org/onlinepubs/009695399/functions/setegid.html>
 module Main (main) where
 
-
-import qualified Mueval.Context (cleanModules, unsafe)
+import Mueval.Parallel
 import Mueval.ParseArgs (getOptions, Options(..))
-import Mueval.Concurrent
+import qualified Mueval.Context (cleanModules, unsafe)
 
 main :: IO ()
 main = do opts <- getOptions
