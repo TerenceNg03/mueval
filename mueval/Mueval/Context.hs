@@ -73,15 +73,19 @@ isFailed :: CheckResult -> Bool
 isFailed CheckOk = False
 isFailed _       = True
 
+-- Desired behaviour:
 {-
-[m@ganon mueval]$ mueval -e 'MyLeetModule.uns4f3Perf0rmIO (print 42)'
+> [m@ganon mueval]$ mueval -e 'MyLeetModule.uns4f3Perf0rmIO (print 42)'
 mueval: Unsafe function(s) to use mentioned.
-[m@ganon mueval]$ mueval -e 'unsafePerformIO (print 42)'
+
+> [m@ganon mueval]$ mueval -e 'unsafePerformIO (print 42)'
 mueval: Unsafe function(s) to use mentioned.
-[m@ganon mueval]$ mueval -e 'Foreign.blah 42'
+
+> [m@ganon mueval]$ mueval -e 'Foreign.blah 42'
 mueval: Unsafe function(s) to use mentioned.
+
 -}
-{-
+{- Example GHCi usage of 'checknames'
 ghci> checkNames "print \"unsafePerformIO\""
 Right CheckOk
 ghci> checkNames "System.IO.Unsafe.unsafePerformIO (print 42)"
@@ -91,6 +95,7 @@ Right (CheckFailed (Just "MyLeetModule") "uns4f3Perf0rmIO")
 ghci> checkNames "MyLeetModule.uns4f3Perf0rmIO (print 42"
 Left "2\nSrcLoc {srcFilename = \"<unknown>.hs\", srcLine = 3, srcColumn = 1}\nParse error\n"
 -}
+
 -- | Parse a Haskell expression and for each identifier, check that it is
 --  not in the blacklist, and in the case of qualified identifiers, that
 --  that module is present in the module whitelist. Compared to the
@@ -99,10 +104,10 @@ Left "2\nSrcLoc {srcFilename = \"<unknown>.hs\", srcLine = 3, srcColumn = 1}\nPa
 checkNames :: String -> Either ParseError CheckResult
 checkNames s = case parseHsExp s of
                  Left e -> Left e
-                 Right exp -> Right (maybe CheckOk id
+                 Right expr -> Right (maybe CheckOk id
                                       . find isFailed
                                         . fmap checkName
-                                          . allNames $ exp)
+                                          . allNames $ expr)
   where find :: (a -> Bool) -> [a] -> Maybe a
         find _ [] = Nothing
         find p (x:xs) = if p x then Just x else find p xs
@@ -112,8 +117,8 @@ checkNames s = case parseHsExp s of
                 qNames = listify
                   ((== typeOf (undefined :: HsQName)) . typeOf)
                 qNameToPair :: HsQName -> (Maybe String, String)
-                qNameToPair (Qual mod name)
-                  = (Just $ showModule mod, showHsName name)
+                qNameToPair (Qual modl name)
+                  = (Just $ showModule modl, showHsName name)
                 qNameToPair (UnQual name)
                   = (Nothing, showHsName name)
                 qNameToPair (Special scon)
@@ -129,19 +134,19 @@ checkNames s = case parseHsExp s of
                 showHsSpecialCon (HsTupleCon n) =
                   concat ["(",replicate (n-1) ',',")"]
         parseHsExp :: String -> Either String HsExp
-        parseHsExp s =
-          case parseHsDecls ("main = "++(filter (/='\n') s)) of
-            Left err -> Left (err++s)
+        parseHsExp t =
+          case parseHsDecls ("main = "++(filter (/='\n') t)) of
+            Left err -> Left (err++t)
             Right xs ->
               case [ e | HsPatBind _ _ (HsUnGuardedRhs e) _ <- xs] of
                 []    -> Left "invalid expression"
                 (e:_) -> Right e
         parseHsDecls :: String -> Either String [HsDecl]
-        parseHsDecls s =
-          let s' = unlines [pprHsModule (emptyHsModule "Main"), s]
-          in case parseModule s' of
+        parseHsDecls t =
+          let t' = unlines [pprHsModule (emptyHsModule "Main"), t]
+          in case parseModule t' of
               ParseOk m -> Right (moduleDecls m)
-              ParseFailed loc e -> Left (unlines [show loc,e])
+              ParseFailed loc e -> Left (unlines [show loc, e])
         pprHsModule :: HsModule -> String
         pprHsModule = prettyPrint
         moduleDecls :: HsModule -> [HsDecl]
@@ -158,9 +163,9 @@ checkNames s = case parseHsExp s of
         checkName (Nothing, name)
           | blacklisted name              = CheckFailed Nothing name
           | otherwise                     = CheckOk
-        checkName (Just mod, name)
+        checkName (Just modl, name)
           | blacklisted name
-            || (not . cleanModules) [mod] = CheckFailed (Just mod) name
+            || (not . cleanModules) [modl] = CheckFailed (Just modl) name
           | otherwise                     = CheckOk
 
 -----------------------------------------------------------------------------
