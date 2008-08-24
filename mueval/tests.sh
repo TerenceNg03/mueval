@@ -4,6 +4,9 @@
 # Save typing
 m () { mueval --inferred-type --expression "$@"; }
 
+# Test whether it's around
+mueval are you there;
+
 # Abort if any commands aren't successful
 set -e
 # Test on valid expressions. Note we conditionalize - all of these should return successfully.
