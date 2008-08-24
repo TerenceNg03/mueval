@@ -98,7 +98,7 @@ say :: String -> Interpreter ()
 say = liftIO . sayIO
 
 sayIO :: String -> IO ()
-sayIO = UTF.putStrLn . Codec.decodeString <=< (fmap (take 1024)) . liftM analyzeResult . forceString . take 1024
+sayIO = UTF.putStrLn . Codec.decodeString <=< fmap (take 1024) . liftM analyzeResult . forceString . take 1024
 
 -- | Oh no, something has gone wrong. If it's a compilation error pretty print
 -- the first 1024 chars of it and throw an "ExitException"
