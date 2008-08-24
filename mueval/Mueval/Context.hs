@@ -45,18 +45,9 @@ unsafeNames = ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
 blacklisted :: String -> Bool
 blacklisted = flip member . fromList $
   [ "unsafePerformIO", "inlinePerformIO"
-  , "unsafeCoerce", "unsafeCoerce#"
-  , "throw", "throwDyn", "error"
-  , "stdin", "stdout", "stderr"]
-
-{-
-data HsQName
-  = Qual Module HsName | UnQual HsName | Special HsSpecialCon
-data HsName = HsIdent String | HsSymbol String
-newtype Module = Module String
-data HsSpecialCon
-  = HsUnitCon | HsListCon | HsFunCon | HsTupleCon Int | HsCons
--}
+  , "unsafeCoerce", "unsafeCoerce#", "unsafeInterleaveIO", "unsafeForeignPtrToPtr"
+  , "throw", "throwDyn", "error", "unsafeInterleaveST", "unsafeIOToSTM"
+  , "stdin", "stdout", "stderr", "unsafeIOToST", "readFile", "writeFile", "inline", "inlinePerformIO"]
 
 type ParseError = String
 
