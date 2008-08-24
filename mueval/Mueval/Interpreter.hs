@@ -116,7 +116,7 @@ printInterpreterError (WontCompile errors) =
 -- so we rethrow them for debugging purposes
 printInterpreterError other = error (show other)
 
--- | Forces a string catching pure exceptions and displaying them like GHCi, ***
+-- | Forces a string catching pure exceptions and displaying them like GHCi, *
 --  Exception: ...
 forceString :: String -> IO String
 forceString str = do r <- fmap Right (E.evaluate (uncons str)) `E.catch` \e -> return $ Left (show e)
@@ -129,7 +129,7 @@ forceString str = do r <- fmap Right (E.evaluate (uncons str)) `E.catch` \e -> r
 
 -- Constant
 exceptionMsg :: String
-exceptionMsg = "*** Exception: "
+exceptionMsg = "* Exception: "
 
 -- | Analyze the output (presumably from 'forceString') and error out if an
 -- exception was present.
