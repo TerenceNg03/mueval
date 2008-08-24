@@ -2,8 +2,7 @@
 # Abort if any commands aren't successful
 set -e
 # Build
-(runhaskell Setup configure --user && runhaskell Setup build && runhaskell Setup haddock
-    && runhaskell Setup install || exit) &&
+(runhaskell Setup configure --user && runhaskell Setup build && runhaskell Setup haddock && runhaskell Setup install || exit) &&
 # Run the test suite with various options
 echo "\n...Single-threaded tests....\n" &&
 sh tests.sh &&
