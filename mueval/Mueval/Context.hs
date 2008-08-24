@@ -1,11 +1,22 @@
-module Mueval.Context (cleanModules, defaultModules, unsafe, checkNames) where
+module Mueval.Context (
+  cleanModules,
+  defaultModules,
+  unsafe,
+  checkNames,
+  CheckResult(..)
+) where
 
 import Data.List (elem, isInfixOf)
 import Language.Haskell.Exts.Syntax
+  (HsQName(..),HsName(..)
+  ,Module(..),HsExp
+  ,HsDecl(HsPatBind)
+  ,HsRhs(HsUnGuardedRhs)
+  ,HsSpecialCon(..),HsModule(..)
+  ,SrcLoc(..))
 import Language.Haskell.Exts (parseModule)
 import Language.Haskell.Exts.Pretty (prettyPrint)
 import Language.Haskell.Exts.Parser (ParseResult(..))
-
 import Data.Set (fromList, member)
 import Data.Typeable (typeOf)
 import Data.Generics (listify)
@@ -26,40 +37,133 @@ unsafeNames = ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
                "OpenGL", "Control.Concurrent", "System.Posix",
                "throw", "Dyn", "cache", "stdin", "stdout", "stderr"]
 
+-----------------------------------------------------------------------------
 
--- | A Nothing indicates that the expression is well-formed and passes the
--- blacklist; a Just "unsafe..." is exactly as it seems.
-type Result = Maybe String
-
--- | This type indicates that haskell-src-exts simply couldn't parse the Haskell fragment.
-type ParseError = String
+-- perhaps it would be better to have a whitelist
+-- for functions to go along with the whitelist
+-- for modules?
+blacklisted :: String -> Bool
+blacklisted = flip member . fromList $
+  [ "unsafePerformIO", "inlinePerformIO"
+  , "unsafeCoerce", "unsafeCoerce#"
+  , "throw", "throwDyn", "error"
+  , "stdin", "stdout", "stderr"]
 
 {-
-ghci> let e = ((\(Right a)->a) . parseHsExp $ "let x = (unsafePerformIO(print())`seq`42) in x")
-ghci> listify ((==typeOf(undefined::HsName)) . typeOf) e :: [HsName]
-[HsIdent "x",HsIdent "unsafePerformIO",HsIdent "print",HsIdent "seq",HsIdent "x"]
+data HsQName
+  = Qual Module HsName | UnQual HsName | Special HsSpecialCon
+data HsName = HsIdent String | HsSymbol String
+newtype Module = Module String
+data HsSpecialCon
+  = HsUnitCon | HsListCon | HsFunCon | HsTupleCon Int | HsCons
 -}
--- | Parse as Haskell expression and analyze for unsafe expressions. Compared to
--- the primitive string munging of 'unsafe', this is the Right Thing.
--- "Right Nothing" is the only safe result.
--- FIXME: Experimental and probably doesn't work. Could use some clean up and
--- better type-fu.
-checkNames :: String -> Either ParseError Result
-checkNames s = case parseHsExp s of
-                 Left err -> Left err
-                 Right expr -> Right . untilM isRascal . fmap showHsName . allHsNamesIn $ expr
-  where untilM :: (a -> Bool) -> [a] -> Maybe a
-        untilM _ [] = Nothing
-        untilM p (x:xs) = if p x
-          then Just x else untilM p xs
-        allHsNamesIn :: HsExp -> [HsName]
-        allHsNamesIn = listify ((== typeOf (undefined :: HsName)) . typeOf)
-        showHsName :: HsName -> String
-        showHsName (HsIdent a) = a
-        showHsName (HsSymbol a) = a
-        isRascal :: String -> Bool
-        isRascal = flip member (fromList unsafeNames)
 
+type ParseError = String
+
+-- | The @Maybe String@ is possibly a qualified module,
+--  and the @String@ is an identifier name.
+data CheckResult
+  = CheckOk
+  | CheckFailed
+      (Maybe String)    -- maybe a module name (e.g. \"System.IO.Unsafe\")
+        String          -- an identifier name (e.g. \"unsafePerformIO\")
+  deriving (Eq,Ord,Show,Read)
+
+isFailed :: CheckResult -> Bool
+isFailed CheckOk = False
+isFailed _       = True
+
+{-
+[m@ganon mueval]$ mueval -e 'MyLeetModule.uns4f3Perf0rmIO (print 42)'
+mueval: Unsafe function(s) to use mentioned.
+[m@ganon mueval]$ mueval -e 'unsafePerformIO (print 42)'
+mueval: Unsafe function(s) to use mentioned.
+[m@ganon mueval]$ mueval -e 'Foreign.blah 42'
+mueval: Unsafe function(s) to use mentioned.
+-}
+{-
+ghci> checkNames "print \"unsafePerformIO\""
+Right CheckOk
+ghci> checkNames "System.IO.Unsafe.unsafePerformIO (print 42)"
+Right (CheckFailed (Just "System.IO.Unsafe") "unsafePerformIO")
+ghci> checkNames "MyLeetModule.uns4f3Perf0rmIO (print 42)"
+Right (CheckFailed (Just "MyLeetModule") "uns4f3Perf0rmIO")
+ghci> checkNames "MyLeetModule.uns4f3Perf0rmIO (print 42"
+Left "2\nSrcLoc {srcFilename = \"<unknown>.hs\", srcLine = 3, srcColumn = 1}\nParse error\n"
+-}
+-- | Parse a Haskell expression and for each identifier, check that it is
+--  not in the blacklist, and in the case of qualified identifiers, that
+--  that module is present in the module whitelist. Compared to the
+--  primitive string munging of @unsafe@, this is the Right Thing.
+--  @Right CheckOk@ is the only safe result.
+checkNames :: String -> Either ParseError CheckResult
+checkNames s = case parseHsExp s of
+                 Left e -> Left e
+                 Right exp -> Right (maybe CheckOk id
+                                      . find isFailed
+                                        . fmap checkName
+                                          . allNames $ exp)
+  where find :: (a -> Bool) -> [a] -> Maybe a
+        find _ [] = Nothing
+        find p (x:xs) = if p x then Just x else find p xs
+        allNames :: HsExp -> [(Maybe String, String)]
+        allNames = fmap qNameToPair . qNames
+          where qNames :: HsExp -> [HsQName]
+                qNames = listify
+                  ((== typeOf (undefined :: HsQName)) . typeOf)
+                qNameToPair :: HsQName -> (Maybe String, String)
+                qNameToPair (Qual mod name)
+                  = (Just $ showModule mod, showHsName name)
+                qNameToPair (UnQual name)
+                  = (Nothing, showHsName name)
+                qNameToPair (Special scon)
+                  = (Nothing, showHsSpecialCon scon)
+                showHsName :: HsName -> String
+                showHsName (HsIdent a) = a
+                showHsName (HsSymbol a) = a
+                showHsSpecialCon :: HsSpecialCon -> String
+                showHsSpecialCon HsUnitCon      = "()"
+                showHsSpecialCon HsCons         = "(:)"
+                showHsSpecialCon HsListCon      = "[]"
+                showHsSpecialCon HsFunCon       = "(->)"
+                showHsSpecialCon (HsTupleCon n) =
+                  concat ["(",replicate (n-1) ',',")"]
+        parseHsExp :: String -> Either String HsExp
+        parseHsExp s =
+          case parseHsDecls ("main = "++(filter (/='\n') s)) of
+            Left err -> Left (err++s)
+            Right xs ->
+              case [ e | HsPatBind _ _ (HsUnGuardedRhs e) _ <- xs] of
+                []    -> Left "invalid expression"
+                (e:_) -> Right e
+        parseHsDecls :: String -> Either String [HsDecl]
+        parseHsDecls s =
+          let s' = unlines [pprHsModule (emptyHsModule "Main"), s]
+          in case parseModule s' of
+              ParseOk m -> Right (moduleDecls m)
+              ParseFailed loc e -> Left (unlines [show loc,e])
+        pprHsModule :: HsModule -> String
+        pprHsModule = prettyPrint
+        moduleDecls :: HsModule -> [HsDecl]
+        moduleDecls (HsModule _ _ _ _ x) = x
+        mkModule :: String -> Module
+        mkModule = Module
+        emptySrcLoc :: SrcLoc
+        emptySrcLoc = (SrcLoc [] 0 0)
+        emptyHsModule :: String -> HsModule
+        emptyHsModule n = (HsModule emptySrcLoc (mkModule n) Nothing [] [])
+        showModule :: Module -> String
+        showModule (Module a) = a
+        checkName :: (Maybe String, String) -> CheckResult
+        checkName (Nothing, name)
+          | blacklisted name              = CheckFailed Nothing name
+          | otherwise                     = CheckOk
+        checkName (Just mod, name)
+          | blacklisted name
+            || (not . cleanModules) [mod] = CheckFailed (Just mod) name
+          | otherwise                     = CheckOk
+
+-----------------------------------------------------------------------------
 
 -- | Return false if any of the listed modules cannot be found in the whitelist.
 cleanModules :: [String] -> Bool
@@ -105,6 +209,7 @@ defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function
                "Data.List",
                "Data.Maybe",
                "Data.Monoid",
+{-
                "Data.Number.BigFloat",
                "Data.Number.CReal",
                "Data.Number.Dif",
@@ -112,6 +217,7 @@ defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function
                "Data.Number.Interval",
                "Data.Number.Natural",
                "Data.Number.Symbolic",
+-}
                "Data.Ord",
                "Data.Ratio",
                "Data.Tree",
@@ -153,58 +259,6 @@ safeModules = defaultModules ++ [
                "Data.Set",
                "Data.Traversable"]
 
-parseHsModule :: String -> Either String HsModule
-parseHsModule s =
-  case parseModule s of
-    ParseOk m -> Right m
-    ParseFailed loc e ->
-      let line = srcLine loc - 1
-      in Left (unlines [show line,show loc,e])
 
-parseHsDecls :: String -> Either String [HsDecl]
-parseHsDecls s =
-  let s' = unlines [pprHsModule (emptyHsModule "Main"), s]
-  in case parseModule s' of
-      ParseOk m -> Right (moduleDecls m)
-      ParseFailed loc e ->
-        let line = srcLine loc - 1
-        in Left (unlines [show line,show loc,e])
 
-parseHsExp :: String -> Either String HsExp
-parseHsExp s =
-  case parseHsDecls ("main = ("++(filter (/='\n') s)++")") of
-    Left err -> Left err
-    Right xs ->
-      case [ e | HsPatBind _ _ (HsUnGuardedRhs e) _ <- xs] of
-        []    -> Left "invalid expression"
-        (e:_) -> Right e
 
-parseHsPat :: String -> Either String HsPat
-parseHsPat s =
-  case parseHsDecls ("(" ++ (filter (/='\n') s) ++ ")=()") of
-    Left err -> Left err
-    Right xs ->
-      case [ p | HsPatBind _ p _ _ <- xs] of
-        []    -> Left "invalid pattern"
-        (p:_) -> Right p
-
-pprHsModule :: HsModule -> String
-pprHsModule = prettyPrint
-
-moduleDecls :: HsModule -> [HsDecl]
-moduleDecls (HsModule _ _ _ _ x) = x
-
-mkModule :: String -> Module
-mkModule = Module
-
-emptySrcLoc :: SrcLoc
-emptySrcLoc = (SrcLoc [] 0 0)
-
-emptyHsModule :: String -> HsModule
-emptyHsModule n =
-    (HsModule
-        emptySrcLoc
-        (mkModule n)
-        Nothing
-        []
-        [])
