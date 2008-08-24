@@ -205,7 +205,10 @@ defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function
                "Data.List",
                "Data.Maybe",
                "Data.Monoid",
-{-
+{- -- Commented out because they are not necessarily available. If anyone misses
+   -- them, perhaps we could look into forcing a dependency on them in the Cabal
+   -- file. For now, we'll let them be optional.
+
                "Data.Number.BigFloat",
                "Data.Number.CReal",
                "Data.Number.Dif",
@@ -253,7 +256,14 @@ safeModules = defaultModules ++ [
                "Data.Map",
                "Data.Sequence",
                "Data.Set",
-               "Data.Traversable"]
+               "Data.Traversable",
+               "Data.Number.BigFloat",
+               "Data.Number.CReal",
+               "Data.Number.Dif",
+               "Data.Number.Fixed",
+               "Data.Number.Interval",
+               "Data.Number.Natural",
+               "Data.Number.Symbolic"]
 
 
 
