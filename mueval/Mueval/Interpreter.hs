@@ -1,10 +1,8 @@
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
-import Control.Monad (liftM)
-import Control.Monad (when, (<=<))
+import Control.Monad (when)
 import Control.Monad.Trans (liftIO)
-import Data.List (isInfixOf)
 import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
@@ -17,6 +15,7 @@ import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, lo
 import qualified Mueval.Resources (limitResources)
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 import qualified System.IO.UTF8 as UTF (putStrLn)
+import Control.Monad.Writer (Any(..),runWriterT,tell)
 
 
 {- | The actual calling of Hint functionality. The heart of this just calls
@@ -98,7 +97,9 @@ say :: String -> Interpreter ()
 say = liftIO . sayIO
 
 sayIO :: String -> IO ()
-sayIO = UTF.putStrLn . Codec.decodeString <=< fmap (take 1024) . liftM analyzeResult . forceString . take 1024
+sayIO str = do (out,b) <- render 1024 str
+               UTF.putStrLn . Codec.decodeString $ out
+               when b $ exitFailure
 
 -- | Oh no, something has gone wrong. If it's a compilation error pretty print
 -- the first 1024 chars of it and throw an "ExitException"
@@ -116,25 +117,33 @@ printInterpreterError (WontCompile errors) =
 -- so we rethrow them for debugging purposes
 printInterpreterError other = error (show other)
 
--- | Forces a string catching pure exceptions and displaying them like GHCi, *
---  Exception: ...
-forceString :: String -> IO String
-forceString str = do r <- fmap Right (E.evaluate (uncons str)) `E.catch` \e -> return $ Left (show e)
-                     case r of
-                       Left e -> return $ exceptionMsg ++ e
-                       Right Nothing -> return []
-                       Right (Just (x,xs)) -> fmap (x:) $ forceString xs
-    where uncons [] = Nothing
-          uncons (x:xs) = x `seq` Just (x,xs)
-
 -- Constant
 exceptionMsg :: String
 exceptionMsg = "* Exception: "
 
--- | Analyze the output (presumably from 'forceString') and error out if an
--- exception was present.
--- TODO: Come up with some cleaner way of working with forceString.
-analyzeResult :: String -> String
-analyzeResult str   | exceptionMsg `isInfixOf` str = error str
-                    | str == "" = ""
-                    | otherwise = str
+-- | renders the input String including its exceptions using @exceptionMsg@
+render :: Int -- ^ max number of characters to include
+       -> String -- ^ input 
+       -> IO (String, Bool) -- ^ ( output, @True@ if we found an exception )
+render i xs = 
+    do (out,Any b) <- runWriterT $ render' i (toStream xs)
+       return (out,b)
+    where 
+      render' n _ | n <= 0 = return ""
+      render' n s = render'' n =<< liftIO s
+
+      render'' _ End = return ""
+      render'' n (Cons x s) = fmap (x:) $ render' (n-1) s
+      render'' n (Exception s) = do 
+        tell (Any True)
+        fmap (take n exceptionMsg ++) $
+             render' (n-length exceptionMsg) s
+
+data Stream = Cons Char (IO Stream) | Exception (IO Stream) | End
+
+toStream :: String -> IO Stream
+toStream str = (E.evaluate (uncons str)) `E.catch` \e -> return $ Exception $ toStream (show e)
+
+    where uncons [] = End
+          uncons (x:xs) = x `seq` Cons x (toStream xs)
+
