@@ -55,7 +55,9 @@ However, you can still manually download and unpack the Mueval tarball, and do t
  sh$ runhaskell Setup install
 
 BUGS:
-Mueval uses a number of techniques for security; particularly problematic seem to be the resource limits, as they have to be specified manually & statically in the source code and so will probably be broken somewhere somewhen.
+Mueval uses a number of techniques for security; particularly problematic seem to be the resource limits, as they have to be specified manually & statically in the source code and so will probably be broken somewhere somewhen. For this reason, they are not enabled by default. Experiment with --rlimits for hours of fun!
+
+Mueval also simply cannot do qualified imports. This is due to limitations in the GHC API; see <http://hackage.haskell.org/trac/ghc/ticket/1895>. (Remember that cc'ing yourself is an implicit vote for the problem to be fixed!)
 
 CONTRIBUTING:
 So, you've discovered a bug or other infelicity? If you can successfully build & install Mueval, but running it on expressions leads to errors, please send me an email at <gwern0@gmail.com>. Include in the email all the output you see if you run the informal test suite:
