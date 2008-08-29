@@ -100,7 +100,7 @@ say = liftIO . sayIO
 
 sayIO :: String -> IO ()
 sayIO str = do (out,b) <- render 1024 str
-               UTF.putStrLn . Codec.decodeString $ out
+               UTF.putStrLn out
                when b $ exitFailure
 
 -- | Oh no, something has gone wrong. If it's a compilation error pretty print
