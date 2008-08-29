@@ -1,7 +1,8 @@
+{-# LANGUAGE PatternGuards #-}
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
-import Control.Monad (when)
+import Control.Monad (when,mplus)
 import Control.Monad.Trans (liftIO)
 import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile)
 import System.Exit (exitFailure)
@@ -16,7 +17,8 @@ import qualified Mueval.Resources (limitResources)
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 import qualified System.IO.UTF8 as UTF (putStrLn)
 import Control.Monad.Writer (Any(..),runWriterT,tell)
-
+import Data.List (stripPrefix)
+import Data.Char (isDigit)
 
 {- | The actual calling of Hint functionality. The heart of this just calls
    'eval', but we do so much more - we disable Haskell extensions, turn on
@@ -112,7 +114,18 @@ printInterpreterError (WontCompile errors) =
        exitFailure
     where
       -- each error starts with the line position, which is uninteresting
-      dropLinePosition = unlines . tail . lines
+      dropLinePosition e
+          | Just s <- parseErr e =  s
+          | otherwise = e -- if the parse fails we fallback on printing the whole error
+      parseErr e = do s <- stripPrefix "<interactive>:" e
+                      skipSpaces =<<(skipNumber =<< skipNumber s)
+      skip x (y:xs) | x == y = Just xs
+                    | otherwise = Nothing
+      skip _ _ = Nothing
+      skipNumber = skip ':' . dropWhile isDigit
+      skipSpaces xs = let xs' = dropWhile (==' ') xs
+                      in skip '\n' xs' `mplus` return xs'
+      
 -- other exceptions indicate some problem in Mueval or the environment,
 -- so we rethrow them for debugging purposes
 printInterpreterError other = error (show other)
