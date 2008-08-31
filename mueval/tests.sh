@@ -58,6 +58,8 @@ m 'runIdentity $ mfix (return . (0:) . scanl (+) 1)'
 m 'fix ((1:).(1:).(zipWith (+) `ap` tail))'
 m 'runST (return 0)'
 m 'map return [1,2] :: [Either String Int]'
+### Test Control.Arrow
+m 'let f = (id *** id) in f (3, 4)'
 ## Test defaulting of expressions
 m 'show []' -E
 m '(+1) <$> [1..3]'
