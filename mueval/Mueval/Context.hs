@@ -176,6 +176,7 @@ cleanModules = and . map (`elem` safeModules)
 defaultModules :: [String]
 defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function",
                "Control.Applicative",
+               "Control.Arrow",
                "Control.Monad",
                "Control.Monad.Cont",
                "Control.Monad.Error",
@@ -241,7 +242,6 @@ defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function
 -}
 safeModules :: [String]
 safeModules = defaultModules ++ [
-               "Control.Arrow",
                "Control.Arrow.Operations",
                "Control.Arrow.Transformer",
                "Control.Arrow.Transformer.All",
