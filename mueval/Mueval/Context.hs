@@ -32,7 +32,7 @@ unsafe = \z -> any (`isInfixOf` z) unsafeNames
 
 unsafeNames :: [String]
 unsafeNames = ["unsafe", "inlinePerform", "liftIO", "Coerce", "Foreign",
-               "Typeable", "Array", "IOBase", "Handle", "ByteString",
+               "Typeable", "IOBase", "Handle", "ByteString",
                "Editline", "GLUT", "lock", "ObjectIO", "System.Time",
                "OpenGL", "Control.Concurrent", "System.Posix",
                "throw", "Dyn", "cache", "stdin", "stdout", "stderr"]
