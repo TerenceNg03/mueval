@@ -2,7 +2,7 @@
 # tests
 
 # Save typing
-m () { mueval --inferred-type --expression "$@"; }
+m () { echo "$@" && mueval --inferred-type --expression "$@"; }
 
 # Test whether it's around
 mueval are you there;
