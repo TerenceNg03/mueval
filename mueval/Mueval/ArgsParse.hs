@@ -24,7 +24,7 @@ data Options = Options
 defaultOptions :: Options
 defaultOptions = Options { expression = ""
                            , modules = defaultModules
-                           , timeLimit = 5
+                           , timeLimit = 10
                            , user = ""
                            , loadFile = ""
                            , printType = False
