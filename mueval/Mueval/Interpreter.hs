@@ -14,7 +14,6 @@ import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, lo
                                          typeOf, withSession, setTopLevelModules,
                                          Interpreter, InterpreterError(..),GhcError(..), ModuleName, Optimizations(All))
 import qualified Mueval.Resources (limitResources)
-import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 import qualified System.IO.UTF8 as UTF (putStrLn)
 import Control.Monad.Writer (Any(..),runWriterT,tell)
 import Data.List (stripPrefix)
