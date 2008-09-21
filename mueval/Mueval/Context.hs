@@ -217,6 +217,7 @@ defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function
                "Data.Number.Interval",
                "Data.Number.Natural",
                "Data.Number.Symbolic",
+               "Math.OEIS",
 -}
                "Data.Ord",
                "Data.Ratio",
@@ -224,7 +225,6 @@ defaultModules = ["Prelude", "ShowQ", "ShowFun", "SimpleReflect", "Data.Function
                "Data.Tuple",
                "Data.Typeable",
                "Data.Word",
-               "Math.OEIS",
                "System.Random",
                "Test.QuickCheck",
                "Text.PrettyPrint.HughesPJ",
