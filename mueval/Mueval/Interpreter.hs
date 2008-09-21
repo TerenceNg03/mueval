@@ -124,7 +124,7 @@ printInterpreterError (WontCompile errors) =
       skipNumber = skip ':' . dropWhile isDigit
       skipSpaces xs = let xs' = dropWhile (==' ') xs
                       in skip '\n' xs' `mplus` return xs'
-      
+
 -- other exceptions indicate some problem in Mueval or the environment,
 -- so we rethrow them for debugging purposes
 printInterpreterError other = error (show other)
@@ -135,18 +135,18 @@ exceptionMsg = "* Exception: "
 
 -- | renders the input String including its exceptions using @exceptionMsg@
 render :: Int -- ^ max number of characters to include
-       -> String -- ^ input 
+       -> String -- ^ input
        -> IO (String, Bool) -- ^ ( output, @True@ if we found an exception )
-render i xs = 
+render i xs =
     do (out,Any b) <- runWriterT $ render' i (toStream xs)
        return (out,b)
-    where 
+    where
       render' n _ | n <= 0 = return ""
       render' n s = render'' n =<< liftIO s
 
       render'' _ End = return ""
       render'' n (Cons x s) = fmap (x:) $ render' (n-1) s
-      render'' n (Exception s) = do 
+      render'' n (Exception s) = do
         tell (Any True)
         fmap (take n exceptionMsg ++) $
              render' (n-length exceptionMsg) s
