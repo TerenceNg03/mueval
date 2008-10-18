@@ -3,17 +3,18 @@
 module Mueval.Interpreter where
 
 import Control.Monad (when,mplus)
-import Control.Monad.Trans (liftIO)
+import Control.Monad.Trans
 import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import qualified Control.Exception as E (bracket,catchDyn,evaluate,catch)
 
-import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, loadModules,
+import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, setImportsQ, loadModules,
                                          setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
                                          typeOf, withSession, setTopLevelModules,
                                          Interpreter, InterpreterError(..),GhcError(..), ModuleName, Optimizations(All))
 import qualified Mueval.Resources (limitResources)
+import qualified Mueval.Context   (qualifiedModules)
 import qualified System.IO.UTF8 as UTF (putStrLn)
 import Control.Monad.Writer (Any(..),runWriterT,tell)
 import Data.List (stripPrefix)
@@ -38,7 +39,7 @@ interpreter prt exts rlimits modules lfl expr = do
                                   let doload = if lfl == ""
                                                 then False else True
 
-                                  when doload (liftIO $ mvload lfl)
+                                  when doload (liftIO (mvload lfl))
 
                                   liftIO $ Mueval.Resources.limitResources rlimits
 
@@ -52,7 +53,8 @@ interpreter prt exts rlimits modules lfl expr = do
 
                                   case modules of
                                     Nothing -> return ()
-                                    Just ms -> setImports ms
+                                    Just ms -> do setImportsQ Mueval.Context.qualifiedModules
+                                                  setImports ms
 
                                   when prt $ say expr
                                   -- we don't check if the expression typechecks

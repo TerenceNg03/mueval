@@ -90,31 +90,19 @@ defaultModules = ["Prelude",
 
    > mueval  --module Data.Map -e "Prelude.map (+1) [1..100]"
 -}
-safeModules :: [String]
-safeModules = defaultModules ++ [
-               "Control.Arrow.Operations",
-               "Control.Arrow.Transformer",
-               "Control.Arrow.Transformer.All",
-               "Data.ByteString",
-               "Data.ByteString.Char8",
-               "Data.ByteString.Lazy",
-               "Data.ByteString.Lazy.Char8",
-               "Data.Foldable",
-               "Data.Generics",
-               "Data.IntMap",
-               "Data.IntSet",
-               "Data.Map",
-               "Data.Sequence",
-               "Data.Set",
-               "Data.Traversable",
-               "Data.Number.BigFloat",
-               "Data.Number.CReal",
-               "Data.Number.Dif",
-               "Data.Number.Fixed",
-               "Data.Number.Interval",
-               "Data.Number.Natural",
-               "Data.Number.Symbolic"]
-
-
-
-
+qualifiedModules :: [(String, Maybe String)]
+qualifiedModules = [
+               ("Control.Arrow.Transformer", Just "AT"),
+               ("Control.Arrow.Transformer.All", Just "AT"),
+               ("Data.ByteString", Just "BS"),
+               ("Data.ByteString.Char8", Just "BSC"),
+               ("Data.ByteString.Lazy", Just "BSL"),
+               ("Data.ByteString.Lazy.Char8", Just "BSLC"),
+               ("Data.Foldable", Just "Data.Foldable"),
+               ("Data.Generics", Just "Data.Generics"),
+               ("Data.IntMap", Just "IM"),
+               ("Data.IntSet", Just "IS"),
+               ("Data.Map", Just "M"),
+               ("Data.Sequence", Just "Data.Sequence"),
+               ("Data.Set", Just "S"),
+               ("Data.Traversable", Just "Data.Traversable") ]
