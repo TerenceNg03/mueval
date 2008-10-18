@@ -60,6 +60,8 @@ m 'map return [1,2] :: [Either String Int]'
 m "listArray (1,10) ['a'..]"
 ### Test Control.Arrow
 m 'let f = (id *** id) in f (3, 4)'
+### Test Control.Applicative
+m "(foldr (liftA2 (||)) (const False) [isDigit, isAlpha]) '3'"
 ## Test defaulting of expressions
 m 'show []' -E
 m '(+1) <$> [1..3]'
