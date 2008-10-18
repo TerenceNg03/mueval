@@ -56,7 +56,6 @@ m 'sequence [[1,2,3],[4,5]]'
 m 'sort [4,6,1,2,3]'
 m 'runIdentity $ mfix (return . (0:) . scanl (+) 1)'
 m 'fix ((1:).(1:).(zipWith (+) `ap` tail))'
-m 'runST (return 0)'
 m 'map return [1,2] :: [Either String Int]'
 m "listArray (1,10) ['a'..]"
 ### Test Control.Arrow
@@ -91,10 +90,6 @@ m 'let x = 1 + x in x' ||
 m 'let fix f = let x = f x in x in foldr (.) id (repeat read) $ fix show' ||
 ## Let's stress the time limits
 m 'let {p x y f = f x y; f x = p x x} in f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f f)))))))))))))))))) f' ||
-## Now let's test the module whitelisting
-m 1+1 --module Data.List --module System.IO.Unsafe --module Control.Monad ||
-m "let foo = unsafePerformIO readFile \"/etc/passwd\" in foo" --module System.IO.Unsafe ||
-m "head [1..]" --module Data.List --module Text.HTML.Download ||
 m " runST (unsafeIOToST (readFile \"/etc/passwd\"))" ||
 ### Can we bypass the whitelisting by fully qualified module names?
 m "Foreign.unsafePerformIO $ readFile \"/etc/passwd\"" ||

@@ -46,8 +46,6 @@ Mueval depends on a few of the standard libraries, which you should have install
 
  sh$ cabal install mueval
 
-(Note that as of 23 August 2008, you will need to build haskell-src-exts from its Darcs repository at <http://code.haskell.org/HSP/haskell-src-exts>, as version 0.3.6 has not been uploaded to Hackage.)
-
 However, you can still manually download and unpack the Mueval tarball, and do the usual Cabal dance:
 
  sh$ runhaskell Setup configure
@@ -56,8 +54,6 @@ However, you can still manually download and unpack the Mueval tarball, and do t
 
 BUGS:
 Mueval uses a number of techniques for security; particularly problematic seem to be the resource limits, as they have to be specified manually & statically in the source code and so will probably be broken somewhere somewhen. For this reason, they are not enabled by default. Experiment with --rlimits for hours of fun!
-
-One of the techniques is parsing Haskell code for unimported qualifiers (because the GHC API is untrustworthy). The library used to parse is haskell-src-exts, as already mentioned; haskell-src-exts has a number of outstanding bugs, one of which is that it chokes sometimes on parsing code such as '(||)'. (I am given to understand the parentheses and pipes conflict with some internal things in it.) If expressions should mysteriously not parse and they contain fragments like the above, you can probably get it to work by simply adding some whitespace - not '(||)' but '( || )'.
 
 Mueval also simply cannot do qualified imports. This is due to limitations in the GHC API; see <http://hackage.haskell.org/trac/ghc/ticket/1895>. (Remember that cc'ing yourself is an implicit vote for the problem to be fixed!)
 
