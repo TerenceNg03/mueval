@@ -75,12 +75,12 @@ rm "TmpModule.hs"
 ## Test the --noimports function
 ## TODO: more extensive tests of this
 m '()' --noimports
+## Test qualified imports
+m "M.map (+1) $ M.fromList [(1,2), (3,4)]" &&
 echo "\nOK, all the valid expressions worked out well." &&
 
 # Test on bad or outright evil expressions
 echo "Now let's test various misbehaved expressions \n" &&
-## TODO: when qualified imports work, move this test to the successful section.
-m "M.map (+1) $ M.fromList [(1,2), (3,4)]" ||
 ## test infinite loop
 m 'let x = x in x' ||
 m 'let x y = x 1 in x 1' --timelimit 3 ||
