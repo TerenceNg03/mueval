@@ -9,7 +9,7 @@ import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import qualified Control.Exception as E (bracket,catchDyn,evaluate,catch)
 
-import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImports, setImportsQ, loadModules,
+import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImportsQ, loadModules,
                                          setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
                                          typeOf, withSession, setTopLevelModules,
                                          Interpreter, InterpreterError(..),GhcError(..), ModuleName, Optimizations(All))
@@ -53,8 +53,8 @@ interpreter prt exts rlimits modules lfl expr = do
 
                                   case modules of
                                     Nothing -> return ()
-                                    Just ms -> do setImportsQ Mueval.Context.qualifiedModules
-                                                  setImports ms
+                                    Just ms -> do let unqualModules =  zip ms (repeat Nothing)
+                                                  setImportsQ (unqualModules ++ Mueval.Context.qualifiedModules)
 
                                   when prt $ say expr
                                   -- we don't check if the expression typechecks
