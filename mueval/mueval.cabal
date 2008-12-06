@@ -23,7 +23,7 @@ homepage:            http://code.haskell.org/mubot/
 
 build-type:          Simple
 cabal-version:       >= 1.2
-tested-with:         GHC==6.8.2
+tested-with:         GHC==6.10.1
 
 data-files:          README
 extra-source-files:  build.sh, tests.sh
