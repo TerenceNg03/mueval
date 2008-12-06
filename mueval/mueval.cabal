@@ -38,4 +38,4 @@ library
 executable mueval
            main-is:       main.hs
            build-depends: base
-           ghc-options:   -Wall -static -O2
+           ghc-options:   -Wall -static -threaded -O2
