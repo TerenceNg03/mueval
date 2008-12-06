@@ -4,14 +4,14 @@ module Mueval.Interpreter where
 
 import Control.Monad (when,mplus)
 import Control.Monad.Trans
-import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile)
+import System.Directory (copyFile, makeRelativeToCurrentDirectory)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
-import qualified Control.Exception as E (bracket,catchDyn,evaluate,catch)
+import qualified Control.OldException as E (evaluate,catch)
 
-import Language.Haskell.Interpreter.GHC (eval, newSession, reset, setImportsQ, loadModules,
+import Language.Haskell.Interpreter.GHC (eval, reset, setImportsQ, loadModules,
                                          setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
-                                         typeOf, withSession, setTopLevelModules,
+                                         typeOf, setTopLevelModules, runInterpreter,
                                          Interpreter, InterpreterError(..),GhcError(..), ModuleName, Optimizations(All))
 import qualified Mueval.Resources (limitResources)
 import qualified Mueval.Context   (qualifiedModules)
@@ -75,15 +75,11 @@ interpreterSession :: Bool -- ^ Whether to print inferred type
                             -- empty string is treated as no file.
                    -> String -- ^ The string to be interpreted as a Haskell expression
                    -> IO ()  -- ^ No real result, since printing is done deeper in
-                            -- the stack.
-interpreterSession prt exts rls mds lfl expr = E.bracket newSession cleanTmpFile $ \session ->
-                                  withSession session (interpreter prt exts rls mds lfl expr)
-                                  `E.catchDyn` printInterpreterError
-    where
-      cleanTmpFile _ = case lfl of
-                         "" -> return ()
-                         l  -> do canonfile <- makeRelativeToCurrentDirectory l
-                                  removeFile $ "/tmp/" ++ takeFileName canonfile
+                             -- the stack.
+interpreterSession prt exts rls mds lfl expr = do   r <- runInterpreter (interpreter prt exts rls mds lfl expr)
+                                                    case r of 
+                                                     Left err -> printInterpreterError err
+                                                     Right () -> return ()
 
 
 mvload :: FilePath -> IO ()

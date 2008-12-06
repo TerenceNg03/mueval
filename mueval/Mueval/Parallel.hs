@@ -3,7 +3,7 @@ module Mueval.Parallel where
 import Prelude hiding (catch)
 import Control.Concurrent   (forkIO, killThread, myThreadId, threadDelay, throwTo, yield, ThreadId)
 import System.Posix.Signals (sigXCPU, installHandler, Handler(CatchOnce))
-import Control.Exception (Exception(ErrorCall),catch)
+import Control.OldException (Exception(ErrorCall),catch)
 import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar, MVar)
 import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
 
