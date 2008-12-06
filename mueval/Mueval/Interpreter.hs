@@ -72,7 +72,7 @@ interpreterSession :: Bool -- ^ Whether to print inferred type
                    -> Bool -- ^ Whether to use rlimits
                    -> Maybe [ModuleName] -- ^ A list of modules we wish to be visible
                    -> String -- ^ A local file from which to grab definitions; an
-                            -- empty string is treated as no file.
+                             -- empty string is treated as no file.
                    -> String -- ^ The string to be interpreted as a Haskell expression
                    -> IO ()  -- ^ No real result, since printing is done deeper in
                              -- the stack.
