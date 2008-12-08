@@ -57,6 +57,8 @@ Mueval uses a number of techniques for security; particularly problematic seem t
 
 Mueval also simply cannot do qualified imports. This is due to limitations in the GHC API; see <http://hackage.haskell.org/trac/ghc/ticket/1895>. (Remember that CC'ing yourself is an implicit vote for the problem to be fixed!)
 
+With darcs Hint and Mueval, compiling Mueval (or any Hint-using executable) with profiling support seems to lead to runtime crashes.
+
 Finally, under 6.10.1, you must run Mueval with "+RTS -N2 -RTS" as otherwise the watchdog threads will not get run and DoS attacks are possible. (Compare 'mueval -e "let x = x + 1 in x"' against 'mueval -e "let x = x + 1 in x" +RTS -N2 -RTS'.)
 
 CONTRIBUTING:

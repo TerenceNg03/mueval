@@ -3,16 +3,17 @@
 module Mueval.Interpreter where
 
 import Control.Monad (when,mplus)
-import Control.Monad.Trans
 import System.Directory (copyFile, makeRelativeToCurrentDirectory)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import qualified Control.OldException as E (evaluate,catch)
 
-import Language.Haskell.Interpreter.GHC (eval, reset, setImportsQ, loadModules,
-                                         setOptimizations, setUseLanguageExtensions, setInstalledModsAreInScopeQualified,
-                                         typeOf, setTopLevelModules, runInterpreter,
-                                         Interpreter, InterpreterError(..),GhcError(..), ModuleName, Optimizations(All))
+import Language.Haskell.Extension(Extension(ExtendedDefaultRules))
+import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
+                                     installedModulesInScope, languageExtensions,
+                                     typeOf, setTopLevelModules, runInterpreter, glasgowExtensions,
+                                     OptionVal(..), 
+                                     Interpreter, InterpreterError(..),GhcError(..), ModuleName)
 import qualified Mueval.Resources (limitResources)
 import qualified Mueval.Context   (qualifiedModules)
 import qualified System.IO.UTF8 as UTF (putStrLn)
@@ -21,25 +22,20 @@ import Data.List (stripPrefix)
 import Data.Char (isDigit)
 
 {- | The actual calling of Hint functionality. The heart of this just calls
-   'eval', but we do so much more - we disable Haskell extensions, turn on
-   optimizations, hide all packages, make sure one cannot call unimported
+   'eval', but we do so much more - we disable Haskell extensions, 
+   hide all packages, make sure one cannot call unimported
    functions, typecheck (and optionally print it), set resource limits for this
    thread, and do some error handling. -}
 interpreter :: Bool -> Bool -> Bool -> Maybe [ModuleName] -> String -> String -> Interpreter ()
 interpreter prt exts rlimits modules lfl expr = do
-                                  setUseLanguageExtensions exts -- False by default
-
-                                  setOptimizations All -- Maybe optimization will make
-                                                       -- more programs
-                                                       -- terminate.
+                                  when exts $ set [languageExtensions := (ExtendedDefaultRules:glasgowExtensions)]
 
                                   reset -- Make sure nothing is available
-                                  setInstalledModsAreInScopeQualified False
+                                  set [installedModulesInScope := False]
 
-                                  let doload = if lfl == ""
-                                                then False else True
+                                  let doload = if lfl == "" then False else True
 
-                                  when doload (liftIO (mvload lfl))
+                                  when doload $ liftIO (mvload lfl)
 
                                   liftIO $ Mueval.Resources.limitResources rlimits
 
@@ -156,4 +152,3 @@ toStream str = (E.evaluate (uncons str)) `E.catch` \e -> return $ Exception $ to
 
     where uncons [] = End
           uncons (x:xs) = x `seq` Cons x (toStream xs)
-

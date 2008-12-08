@@ -32,7 +32,7 @@ library
         exposed-modules:     Mueval.Parallel, Mueval.Context, Mueval.Interpreter,
                              Mueval.ArgsParse, Mueval.Resources
         build-depends:       base, containers, directory, mtl, filepath, unix,
-                             hint>=0.3.0.0, show>=0.3, utf8-string
+                             hint>=0.3.0.0, show>=0.3, utf8-string, Cabal
         ghc-options:         -Wall -static -O2
 
 executable mueval
