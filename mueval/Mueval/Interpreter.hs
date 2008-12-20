@@ -33,7 +33,7 @@ interpreter prt exts rlimits modules lfl expr = do
                                   reset -- Make sure nothing is available
                                   set [installedModulesInScope := False]
 
-                                  let doload = if lfl == "" then False else True
+                                  let doload = lfl /= ""
 
                                   when doload $ liftIO (mvload lfl)
 
@@ -79,8 +79,8 @@ interpreterSession prt exts rls mds lfl expr = do   r <- runInterpreter (interpr
 
 
 mvload :: FilePath -> IO ()
-mvload lfl = do canonfile <- (makeRelativeToCurrentDirectory lfl)
-                liftIO $ copyFile canonfile ("/tmp/" ++ (takeFileName canonfile))
+mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
+                liftIO $ copyFile canonfile $ "/tmp/" ++ takeFileName canonfile
 
 ---------------------------------
 -- Handling and outputting results
@@ -142,13 +142,11 @@ render i xs =
       render'' n (Cons x s) = fmap (x:) $ render' (n-1) s
       render'' n (Exception s) = do
         tell (Any True)
-        fmap (take n exceptionMsg ++) $
-             render' (n-length exceptionMsg) s
+        fmap (take n exceptionMsg ++) $ render' (n - length exceptionMsg) s
 
 data Stream = Cons Char (IO Stream) | Exception (IO Stream) | End
 
 toStream :: String -> IO Stream
-toStream str = (E.evaluate (uncons str)) `E.catch` \e -> return $ Exception $ toStream (show e)
-
+toStream str = E.evaluate (uncons str) `E.catch` \e -> return $ Exception $ toStream (show e)
     where uncons [] = End
           uncons (x:xs) = x `seq` Cons x (toStream xs)
