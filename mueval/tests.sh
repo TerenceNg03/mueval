@@ -68,7 +68,7 @@ m "(foldr (liftA2 (||)) (const False) [isDigit, isAlpha]) '3'"
 m 'show []' -E
 m '(+1) <$> [1..3]'
 ## Now let's do file loading
-echo "module TmpModule (foo, bar) where\nfoo x = x + 1 \nbar x = x + 2" > "TmpModule.hs"
+echo "module TmpModule (foo, bar) where { foo x = x + 1; bar x = x + 2 }" > "TmpModule.hs"
 m '1+1' --loadfile="TmpModule.hs"
 m 'foo 1' --loadfile="TmpModule.hs"
 m 'bar 1' --loadfile="TmpModule.hs"
