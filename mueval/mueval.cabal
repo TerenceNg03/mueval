@@ -31,16 +31,16 @@ extra-source-files:  build.sh, tests.sh
 library
         exposed-modules:     Mueval.Parallel, Mueval.Context, Mueval.Interpreter,
                              Mueval.ArgsParse, Mueval.Resources
-        build-depends:       base>=4, containers, directory, mtl, filepath, unix,
+        build-depends:       base>=4, containers, directory, mtl, filepath, unix, process,
                              hint>=0.3.0.0, show>=0.3, utf8-string, Cabal
         ghc-options:         -Wall -static -O2
 
-executable mueval
+executable mueval-core
            main-is:       main.hs
            build-depends: base
            ghc-options:   -Wall -static -threaded -O2
 
-executable mueval-watchdog
-           main-is:       mueval-watchdog.hs
+executable mueval
+           main-is:       watchdog.hs
            build-depends: base
            ghc-options:   -Wall -static -threaded -O2
