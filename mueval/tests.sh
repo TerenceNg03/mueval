@@ -5,7 +5,7 @@
 m () { echo "$@" && mueval --inferred-type --expression "$@"; }
 
 # Test whether it's around
-mueval -e "are you there" &> /dev/null
+mueval &> /dev/null
 
 # Abort if any commands aren't successful
 set -e
