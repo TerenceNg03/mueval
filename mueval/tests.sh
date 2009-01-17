@@ -58,7 +58,6 @@ m 'sequence [[1,2,3],[4,5]]'
 m 'sort [4,6,1,2,3]'
 m 'runIdentity $ mfix (return . (0:) . scanl (+) 1)'
 m 'fix ((1:).(1:).(zipWith (+) `ap` tail))'
-m 'map return [1,2] :: [Either String Int]'
 m "listArray (1,10) ['a'..]"
 ### Test Control.Arrow
 m 'let f = (id *** id) in f (3, 4)'
