@@ -92,8 +92,8 @@ defaultModules = ["Prelude",
 -}
 qualifiedModules :: [(String, Maybe String)]
 qualifiedModules = [
-               ("Control.Arrow.Transformer", Just "AT"),
-               ("Control.Arrow.Transformer.All", Just "AT"),
+--                ("Control.Arrow.Transformer", Just "AT"),
+--                ("Control.Arrow.Transformer.All", Just "AT"),
                ("Data.ByteString", Just "BS"),
                ("Data.ByteString.Char8", Just "BSC"),
                ("Data.ByteString.Lazy", Just "BSL"),
