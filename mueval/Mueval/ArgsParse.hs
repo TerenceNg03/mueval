@@ -1,8 +1,6 @@
 module Mueval.ArgsParse (Options(..), interpreterOpts, getOptions) where
 
-import Control.Monad (liftM)
 import System.Console.GetOpt
-import System.Environment (getArgs)
 
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 
@@ -63,16 +61,14 @@ options = [Option "p"     ["password"]
                       (NoArg (\opts -> opts { rlimits = True}))
                       "Enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems." ]
 
-interpreterOpts :: [String] -> IO (Options, [String])
+interpreterOpts :: [String] -> (Options, [String])
 interpreterOpts argv =
        case getOpt Permute options argv of
-          (o,n,[]) -> return (foldl (flip id) defaultOptions o, n)
-          (_,_,er) -> ioError $ userError (concat er ++ usageInfo header options)
+          (o,n,[]) -> (foldl (flip id) defaultOptions o, n)
+          (_,_,er) -> error $ (concat er ++ usageInfo header options)
       where header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
 
--- | Just give us the end result options; this handles I/O and parsing for
--- us. Bonus points for handling UTF.
-getOptions :: IO Options
-getOptions = do input <- liftM (map Codec.decodeString) getArgs
-                (opts,_) <- interpreterOpts $ input
-                return opts
+-- | Just give us the end result options; this parsing for
+--   us. Bonus points for handling UTF.
+getOptions :: [String] -> Options
+getOptions = fst . interpreterOpts . map Codec.decodeString
