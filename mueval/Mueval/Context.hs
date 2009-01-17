@@ -10,7 +10,7 @@ import Data.List (elem)
 
 -- | Return false if any of the listed modules cannot be found in the whitelist.
 cleanModules :: [String] -> Bool
-cleanModules = and . map (`elem` defaultModules)
+cleanModules = all (`elem` defaultModules)
 
 {- | Modules which we should load by default. These are of course whitelisted.
    Specifically, we want the Prelude because otherwise things are horribly

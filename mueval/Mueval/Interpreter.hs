@@ -59,7 +59,7 @@ interpreter prt exts rlimits modules lfl expr = do
 
                                   result <- eval expr
 
-                                  say $ result
+                                  say result
 
 -- | Wrapper around 'interpreter'; supplies a fresh GHC API session and
 -- error-handling. The arguments are simply passed on.
@@ -94,7 +94,7 @@ say = liftIO . sayIO
 sayIO :: String -> IO ()
 sayIO str = do (out,b) <- render 1024 str
                UTF.putStrLn out
-               when b $ exitFailure
+               when b exitFailure
 
 -- | Oh no, something has gone wrong. If it's a compilation error pretty print
 -- the first 1024 chars of it and throw an "ExitException"

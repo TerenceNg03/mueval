@@ -65,7 +65,7 @@ interpreterOpts :: [String] -> (Options, [String])
 interpreterOpts argv =
        case getOpt Permute options argv of
           (o,n,[]) -> (foldl (flip id) defaultOptions o, n)
-          (_,_,er) -> error $ (concat er ++ usageInfo header options)
+          (_,_,er) -> error (concat er ++ usageInfo header options)
       where header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
 
 -- | Just give us the end result options; this parsing for
