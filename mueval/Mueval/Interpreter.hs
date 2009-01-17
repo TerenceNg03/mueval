@@ -20,14 +20,15 @@ import qualified System.IO.UTF8 as UTF (putStrLn)
 import Control.Monad.Writer (Any(..),runWriterT,tell)
 import Data.List (stripPrefix)
 import Data.Char (isDigit)
+import Control.Monad.Trans
 
 {- | The actual calling of Hint functionality. The heart of this just calls
    'eval', but we do so much more - we disable Haskell extensions, 
    hide all packages, make sure one cannot call unimported
-   functions, typecheck (and optionally print it), set resource limits for this
+   functions, typecheck, set resource limits for this
    thread, and do some error handling. -}
-interpreter :: Bool -> Bool -> Bool -> Maybe [ModuleName] -> String -> String -> Interpreter ()
-interpreter prt exts rlimits modules lfl expr = do
+interpreter :: Bool -> Bool -> Maybe [ModuleName] -> String -> String -> Interpreter (String,String,String)
+interpreter exts rlimits modules lfl expr = do
                                   when exts $ set [languageExtensions := (ExtendedDefaultRules:glasgowExtensions)]
 
                                   reset -- Make sure nothing is available
@@ -39,12 +40,10 @@ interpreter prt exts rlimits modules lfl expr = do
 
                                   liftIO $ Mueval.Resources.limitResources rlimits
 
-                                  when doload $ do
-                                                   let lfl' = takeFileName lfl
+                                  when doload $ do let lfl' = takeFileName lfl
                                                    loadModules [lfl']
                                                    -- We need to mangle the String to
-                                                   -- turn a filename into a
-                                                   -- module
+                                                   -- turn a filename into a module.
                                                    setTopLevelModules [(takeWhile (/='.') lfl')]
 
                                   case modules of
@@ -52,17 +51,15 @@ interpreter prt exts rlimits modules lfl expr = do
                                     Just ms -> do let unqualModules =  zip ms (repeat Nothing)
                                                   setImportsQ (unqualModules ++ Mueval.Context.qualifiedModules)
 
-                                  when prt $ say expr
                                   -- we don't check if the expression typechecks
                                   -- this way we get an "InterpreterError" we can display
-                                  when prt $ say =<< typeOf expr
+                                  etype <- typeOf expr
 
                                   result <- eval expr
-
-                                  say result
-
+                                  return (expr, etype, result)
+ 
 -- | Wrapper around 'interpreter'; supplies a fresh GHC API session and
--- error-handling. The arguments are simply passed on.
+-- error-handling. The arguments are largely passed on, and the results lightly parsed.
 interpreterSession :: Bool -- ^ Whether to print inferred type
                    -> Bool -- ^ Whether to use GHC extensions
                    -> Bool -- ^ Whether to use rlimits
@@ -70,14 +67,13 @@ interpreterSession :: Bool -- ^ Whether to print inferred type
                    -> String -- ^ A local file from which to grab definitions; an
                              -- empty string is treated as no file.
                    -> String -- ^ The string to be interpreted as a Haskell expression
-                   -> IO ()  -- ^ No real result, since printing is done deeper in
-                             -- the stack.
-interpreterSession prt exts rls mds lfl expr = do   r <- runInterpreter (interpreter prt exts rls mds lfl expr)
-                                                    case r of 
-                                                     Left err -> printInterpreterError err
-                                                     Right () -> return ()
-
-
+                   -> IO ()  -- ^ No real result, since we print no matter the result.
+interpreterSession prt exts rls mds lfl expr = do r <- runInterpreter (interpreter exts rls mds lfl expr)
+                                                  case r of 
+                                                   Left err -> printInterpreterError err
+                                                   Right (e,et,val) -> do when prt $ (sayIO e >> sayIO et)
+                                                                          sayIO val
+                                                                       
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
                 liftIO $ copyFile canonfile $ "/tmp/" ++ takeFileName canonfile
@@ -85,12 +81,9 @@ mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
 ---------------------------------
 -- Handling and outputting results
 
--- | From inside the Interpreter monad, print the String (presumably the result
+-- | Print the String (presumably the result
 -- of interpreting something), but only print the first 1024 characters to avoid
 -- flooding. Lambdabot has a similar limit.
-say :: String -> Interpreter ()
-say = liftIO . sayIO
-
 sayIO :: String -> IO ()
 sayIO str = do (out,b) <- render 1024 str
                UTF.putStrLn out
@@ -111,7 +104,7 @@ printInterpreterError (WontCompile errors) =
           | Just s <- parseErr e =  s
           | otherwise = e -- if the parse fails we fallback on printing the whole error
       parseErr e = do s <- stripPrefix "<interactive>:" e
-                      skipSpaces =<<(skipNumber =<< skipNumber s)
+                      skipSpaces =<< (skipNumber =<< skipNumber s)
       skip x (y:xs) | x == y = Just xs
                     | otherwise = Nothing
       skip _ _ = Nothing
@@ -127,10 +120,11 @@ printInterpreterError other = error (show other)
 exceptionMsg :: String
 exceptionMsg = "* Exception: "
 
--- | renders the input String including its exceptions using @exceptionMsg@
-render :: Int -- ^ max number of characters to include
-       -> String -- ^ input
-       -> IO (String, Bool) -- ^ ( output, @True@ if we found an exception )
+-- | Renders the input String including its exceptions using @exceptionMsg@
+render :: (Control.Monad.Trans.MonadIO m) =>
+          Int -> -- ^ max number of characters to include
+          String -> -- ^ input
+          m (String, Bool) -- ^ ( output, @True@ if we found an exception )
 render i xs =
     do (out,Any b) <- runWriterT $ render' i (toStream xs)
        return (out,b)
