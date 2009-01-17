@@ -6,7 +6,9 @@ module Main (main) where
 
 import Mueval.Parallel
 import Mueval.ArgsParse (getOptions)
+import System.Environment
 
 main :: IO ()
-main = do opts <- getOptions
+main = do args <- getArgs
+          let opts = getOptions args
           forkedMain opts
