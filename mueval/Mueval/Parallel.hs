@@ -1,7 +1,7 @@
 module Mueval.Parallel where
 
 import Prelude hiding (catch)
-import Control.Concurrent   (forkIO, killThread, myThreadId, threadDelay, throwTo, yield, ThreadId)
+import Control.Concurrent   (forkIO, killThread, myThreadId, threadDelay, throwTo, ThreadId)
 import System.Posix.Signals (sigXCPU, installHandler, Handler(CatchOnce))
 import Control.OldException (Exception(ErrorCall),catch)
 import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar, MVar)
@@ -18,11 +18,10 @@ watchDog tout tid = do installHandler sigXCPU
                        forkIO $ do threadDelay (tout * 700000)
                                    -- Time's up. It's a good day to die.
                                    throwTo tid (ErrorCall "Time limit exceeded")
-                                   yield -- give the other thread a chance
                                    killThread tid -- Die now, srsly.
                                    error "Time expired"
-                       return () -- Never reached. Either we error out in
-                                 -- watchDog, or the evaluation thread finishes.
+                       return () -- Never reached. Either we error out here
+                                 -- or the evaluation thread finishes.
 
 -- | A basic blocking operation.
 block :: (t -> MVar a -> IO t1) -> t -> IO a
@@ -35,12 +34,12 @@ forkedMain :: Options -> IO ()
 forkedMain opts = block forkedMain' opts >> return ()
 
 -- | Set a 'watchDog' on this thread, and then continue on with whatever.
-forkedMain' :: Options -> MVar [Char] -> IO ThreadId
+forkedMain' :: Options -> MVar String -> IO ThreadId
 forkedMain' opts mvar = do mainId <- myThreadId
                            watchDog tout mainId
                            hSetBuffering stdout NoBuffering
 
-                      -- Our modules and expression are set up. Let's do stuff.
+                           -- Our modules and expression are set up. Let's do stuff.
                            forkIO $ (interpreterSession typeprint extend rls mdls fls expr
                                                             >> putMVar mvar "Done.")
                                       `catch` throwTo mainId -- bounce exceptions to the main thread,
