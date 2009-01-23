@@ -7,12 +7,10 @@ import System.Directory (copyFile, makeRelativeToCurrentDirectory)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import qualified Control.OldException as E (evaluate,catch)
-
-import Language.Haskell.Extension(Extension(ExtendedDefaultRules))
 import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
                                      installedModulesInScope, languageExtensions,
                                      typeOf, setTopLevelModules, runInterpreter, glasgowExtensions,
-                                     OptionVal(..), 
+                                     OptionVal(..), Extension(ExtendedDefaultRules),
                                      Interpreter, InterpreterError(..),GhcError(..), ModuleName)
 import qualified Mueval.Resources (limitResources)
 import qualified Mueval.Context   (qualifiedModules)
