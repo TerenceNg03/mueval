@@ -25,7 +25,7 @@ build-type:          Simple
 cabal-version:       >= 1.2
 tested-with:         GHC==6.10.1
 
-data-files:          README
+data-files:          README, HCAR.tex
 extra-source-files:  build.sh, tests.sh
 
 library
