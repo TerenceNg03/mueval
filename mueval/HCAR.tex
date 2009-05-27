@@ -1,31 +1,30 @@
-\begin{hcarentry}[section]{mueval}
+\begin{hcarentry}[updated]{mueval}
 \label{mueval}
-\report{Gwern Branwen}
+\report{Gwern Branwen}%11/08
 \participants{Andrea Vezzosi, Daniel Gorin, Spencer Janssen}
 \status{active development}
 \makeheader
 
-Mueval is a code evaluator for Haskell; it employs the GHC API (as provided by the Hint library). It uses a variety of techniques to evaluate arbitrary Haskell expressions safely & securely. Since it was begun in June 2008, tremendous progress has been made; it is currently used in Lambdabot live in #haskell). Mueval can also be called from the command-line.
+Mueval is a code evaluator for Haskell; it employs the GHC API (as provided by the Hint library~\cref{hint}). It uses a variety of techniques to evaluate arbitrary Haskell expressions safely \& securely. Since it was begun in June 2008, tremendous progress has been made; it is currently used in Lambdabot live in \#haskell). Mueval can also be called from the command-line.
 
 Mueval features:
-\begin{compactitem}
-\item A comprehensive test-suite of expressions which should and shouldn't work
+\begin{itemize}
+\item A comprehensive test-suite of expressions which should and should not work
 \item Defeats all known attacks
 \item Optional resource limits and module imports
 \item The ability to load in definitions from a specified file
 \item Parses Haskell expressions with haskell-src-exts and tests against black- and white-lists
-\item A process-level watchdog, to work around past and future GHC issues with thread-level watchdogs.
+\item A process-level watchdog, to work around past and future GHC issues with thread-level watchdogs
 \item Cabalized
-\end{compactitem}
+\end{itemize}
 We are currently working on the following:
-\begin{compactitem}
+\begin{itemize}
 \item Refactoring modules to render Mueval more useful as a library
 \item Removing the POSIX-only requirement
-\end{compactitem}
+\end{itemize}
 
 \FurtherReading
-\item The source repository is available:
+The source repository is available:
  \texttt{darcs get}
  \text{\url{http://code.haskell.org/mubot/}}
-\end{compactitem}
 \end{hcarentry}
