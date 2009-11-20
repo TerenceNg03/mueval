@@ -1,5 +1,6 @@
 module Mueval.ArgsParse (Options(..), interpreterOpts, getOptions) where
 
+import Control.Monad (liftM)
 import System.Console.GetOpt
 
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
@@ -9,26 +10,26 @@ import Mueval.Context (defaultModules)
 -- | See the results of --help for information on what each option means.
 data Options = Options
  { timeLimit :: Int
-   , modules :: [String]
+   , modules :: Maybe [String]
    , expression :: String
    , loadFile :: String
    , user :: String
    , printType :: Bool
    , extensions :: Bool
-   , noimports :: Bool
-   , rlimits :: Bool
+   , noImports :: Bool
+   , rLimits :: Bool
  } deriving Show
 
 defaultOptions :: Options
 defaultOptions = Options { expression = ""
-                           , modules = defaultModules
+                           , modules = Just defaultModules
                            , timeLimit = 5
                            , user = ""
                            , loadFile = ""
                            , printType = False
                            , extensions = False
-                           , noimports = False
-                           , rlimits = False }
+                           , noImports = False
+                           , rLimits = False }
 
 options :: [OptDescr (Options -> Options)]
 options = [Option "p"     ["password"]
@@ -43,10 +44,10 @@ options = [Option "p"     ["password"]
                       "A local file for Mueval to load, providing definitions. Contents are trusted! Do not put anything dubious in it!",
 
            Option "m"     ["module"]
-                      (ReqArg (\m opts -> opts { modules = m:modules opts}) "MODULE")
+                      (ReqArg (\m opts -> opts { modules = liftM (m:) (modules opts)}) "MODULE")
                       "A module we should import functions from for evaluation. (Can be given multiple times.)",
            Option "n"     ["noimports"]
-                      (NoArg (\opts -> opts { noimports = True}))
+                      (NoArg (\opts -> opts { noImports = True}))
                       "Whether to import any default modules, such as Prelude; this is useful if you are loading a file which, say, redefines Prelude operators.",
            Option "E"     ["Extensions"]
                       (NoArg (\opts -> opts { extensions = True}))
@@ -58,7 +59,7 @@ options = [Option "p"     ["password"]
                       (NoArg (\opts -> opts { printType = True}))
                       "Whether to enable printing of inferred type and the expression (as Mueval sees it). Defaults to false.",
            Option "r"     ["rlimits"]
-                      (NoArg (\opts -> opts { rlimits = True}))
+                      (NoArg (\opts -> opts { rLimits = True}))
                       "Enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems." ]
 
 interpreterOpts :: [String] -> (Options, [String])

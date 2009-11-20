@@ -36,19 +36,12 @@ forkedMain opts = block forkedMain' opts >> return ()
 -- | Set a 'watchDog' on this thread, and then continue on with whatever.
 forkedMain' :: Options -> MVar String -> IO ThreadId
 forkedMain' opts mvar = do mainId <- myThreadId
-                           watchDog tout mainId
+                           watchDog (timeLimit opts) mainId
                            hSetBuffering stdout NoBuffering
 
                            -- Our modules and expression are set up. Let's do stuff.
-                           forkIO $ (interpreterSession typeprint extend rls mdls fls expr
+                           forkIO $ (interpreterSession (checkImport opts)
                                                             >> putMVar mvar "Done.")
                                       `catch` throwTo mainId -- bounce exceptions to the main thread,
                                                              -- so they are reliably printed out
-          where mdls = if impq then Nothing else Just (modules opts)
-                expr = expression opts
-                tout = timeLimit opts
-                typeprint = printType opts
-                extend = extensions opts
-                fls = loadFile opts
-                impq = noimports opts
-                rls = rlimits opts
+          where checkImport x = if noImports x then x{modules=Nothing} else x

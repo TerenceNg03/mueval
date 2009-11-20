@@ -3,81 +3,78 @@
 module Mueval.Interpreter where
 
 import Control.Monad (when,mplus)
-import System.Directory (copyFile, makeRelativeToCurrentDirectory)
+import Control.Monad.Trans (MonadIO)
+import Control.Monad.Writer (Any(..),runWriterT,tell)
+import Data.Char (isDigit)
+import Data.List (stripPrefix)
+import System.Directory (copyFile, makeRelativeToCurrentDirectory, setCurrentDirectory)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import qualified Control.OldException as E (evaluate,catch)
+
+import qualified System.IO.UTF8 as UTF (putStrLn)
+
 import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
                                      installedModulesInScope, languageExtensions,
                                      typeOf, setTopLevelModules, runInterpreter, glasgowExtensions,
                                      OptionVal(..), Extension(ExtendedDefaultRules),
-                                     Interpreter, InterpreterError(..),GhcError(..), ModuleName)
-import qualified Mueval.Resources (limitResources)
-import qualified Mueval.Context   (qualifiedModules)
-import qualified System.IO.UTF8 as UTF (putStrLn)
-import Control.Monad.Writer (Any(..),runWriterT,tell)
-import Data.List (stripPrefix)
-import Data.Char (isDigit)
-import Control.Monad.Trans
+                                     Interpreter, InterpreterError(..),GhcError(..))
+
+import Mueval.ArgsParse (Options(..))
+import qualified Mueval.Resources as MR (limitResources) 
+import qualified Mueval.Context  as MC (qualifiedModules)
 
 {- | The actual calling of Hint functionality. The heart of this just calls
    'eval', but we do so much more - we disable Haskell extensions, 
    hide all packages, make sure one cannot call unimported
    functions, typecheck, set resource limits for this
    thread, and do some error handling. -}
-interpreter :: Bool -> Bool -> Maybe [ModuleName] -> String -> String -> Interpreter (String,String,String)
-interpreter exts rlimits modules lfl expr = do
+interpreter :: Options -> Interpreter (String,String,String)
+interpreter Options { extensions = exts, rLimits = rlimits, 
+                      loadFile = load, expression = expr,
+                      modules = m } = do
                                   when exts $ set [languageExtensions := (ExtendedDefaultRules:glasgowExtensions)]
 
                                   reset -- Make sure nothing is available
                                   set [installedModulesInScope := False]
 
-                                  let doload = lfl /= ""
+                                  when (load /= "") $ do liftIO (mvload load)
+                                                         let lfl' = takeFileName load
+                                                         loadModules [lfl']
+                                                         -- We need to mangle the String to
+                                                         -- turn a filename into a module.
+                                                         setTopLevelModules [(takeWhile (/='.') lfl')]
 
-                                  when doload $ liftIO (mvload lfl)
+                                  liftIO $ MR.limitResources rlimits
 
-                                  liftIO $ Mueval.Resources.limitResources rlimits
-
-                                  when doload $ do let lfl' = takeFileName lfl
-                                                   loadModules [lfl']
-                                                   -- We need to mangle the String to
-                                                   -- turn a filename into a module.
-                                                   setTopLevelModules [(takeWhile (/='.') lfl')]
-
-                                  case modules of
+                                  case m of
                                     Nothing -> return ()
                                     Just ms -> do let unqualModules =  zip ms (repeat Nothing)
-                                                  setImportsQ (unqualModules ++ Mueval.Context.qualifiedModules)
+                                                  setImportsQ (unqualModules ++ MC.qualifiedModules)
 
                                   -- we don't check if the expression typechecks
                                   -- this way we get an "InterpreterError" we can display
                                   etype <- typeOf expr
-
                                   result <- eval expr
+
                                   return (expr, etype, result)
  
 -- | Wrapper around 'interpreter'; supplies a fresh GHC API session and
 -- error-handling. The arguments are largely passed on, and the results lightly parsed.
-interpreterSession :: Bool -- ^ Whether to print inferred type
-                   -> Bool -- ^ Whether to use GHC extensions
-                   -> Bool -- ^ Whether to use rlimits
-                   -> Maybe [ModuleName] -- ^ A list of modules we wish to be visible
-                   -> String -- ^ A local file from which to grab definitions; an
-                             -- empty string is treated as no file.
-                   -> String -- ^ The string to be interpreted as a Haskell expression
-                   -> IO ()  -- ^ No real result, since we print no matter the result.
-interpreterSession prt exts rls mds lfl expr = do r <- runInterpreter (interpreter exts rls mds lfl expr)
-                                                  case r of 
-                                                   Left err -> printInterpreterError err
-                                                   Right (e,et,val) -> do when prt $ (sayIO e >> sayIO et)
-                                                                          sayIO val
+interpreterSession :: Options -> IO ()
+interpreterSession opts = do r <- runInterpreter (interpreter opts)
+                             case r of 
+                                 Left err -> printInterpreterError err
+                                 Right (e,et,val) -> when (printType opts) (sayIO e >> sayIO et) >> sayIO val
                                                                        
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
                 liftIO $ copyFile canonfile $ "/tmp/" ++ takeFileName canonfile
+                setCurrentDirectory "/tmp" -- will at least mess up relative links
 
 ---------------------------------
 -- Handling and outputting results
+-- TODO: this whole section is a hack
 
 -- | Print the String (presumably the result
 -- of interpreting something), but only print the first 1024 characters to avoid
@@ -116,7 +113,7 @@ printInterpreterError other = error (show other)
 
 -- Constant
 exceptionMsg :: String
-exceptionMsg = "* Exception: "
+exceptionMsg = "*Exception: "
 
 -- | Renders the input String including its exceptions using @exceptionMsg@
 render :: (Control.Monad.Trans.MonadIO m) =>
@@ -139,6 +136,6 @@ render i xs =
 data Stream = Cons Char (IO Stream) | Exception (IO Stream) | End
 
 toStream :: String -> IO Stream
-toStream str = E.evaluate (uncons str) `E.catch` \e -> return $ Exception $ toStream (show e)
+toStream str = E.evaluate (uncons str) `E.catch` (return . Exception . toStream . show)
     where uncons [] = End
           uncons (x:xs) = x `seq` Cons x (toStream xs)
