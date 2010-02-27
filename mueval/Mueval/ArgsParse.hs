@@ -36,7 +36,7 @@ options = [Option "p"     ["password"]
                       (ReqArg (\u opts -> opts {user = u}) "PASSWORD")
                       "The password for the mubot account. If this is set, mueval will attempt to setuid to the mubot user. This is optional, as it requires the mubot user to be set up properly. (Currently a null-op.)",
            Option "t"     ["timelimit"]
-                      (ReqArg (\t opts -> opts { timeLimit = (read t :: Int) }) "TIME")
+                      (ReqArg (\t opts -> opts { timeLimit = read t :: Int }) "TIME")
                       "Time limit for compilation and evaluation",
 
            Option "l"     ["loadfile"]

@@ -43,7 +43,7 @@ interpreter Options { extensions = exts, rLimits = rlimits,
                                                          loadModules [lfl']
                                                          -- We need to mangle the String to
                                                          -- turn a filename into a module.
-                                                         setTopLevelModules [(takeWhile (/='.') lfl')]
+                                                         setTopLevelModules [takeWhile (/='.') lfl']
 
                                   liftIO $ MR.limitResources rlimits
 
