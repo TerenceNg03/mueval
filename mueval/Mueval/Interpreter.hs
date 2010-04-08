@@ -10,7 +10,7 @@ import Data.List (stripPrefix)
 import System.Directory (copyFile, makeRelativeToCurrentDirectory, setCurrentDirectory)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
-import qualified Control.OldException as E (evaluate,catch)
+import qualified Control.Exception.Extensible as E (evaluate,catch,SomeException(..))
 
 import qualified System.IO.UTF8 as UTF (putStrLn)
 
@@ -138,6 +138,7 @@ render i xs =
 data Stream = Cons Char (IO Stream) | Exception (IO Stream) | End
 
 toStream :: String -> IO Stream
-toStream str = E.evaluate (uncons str) `E.catch` (return . Exception . toStream . show)
+toStream str = E.evaluate (uncons str) `E.catch`
+                \(E.SomeException e) -> return . Exception . toStream . show $ e
     where uncons [] = End
           uncons (x:xs) = x `seq` Cons x (toStream xs)
