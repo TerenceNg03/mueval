@@ -76,6 +76,9 @@ rm "TmpModule.hs"
 ## Test the --noimports function
 ## TODO: more extensive tests of this
 m '()' --noimports
+## Test naming individual syntactic extensions
+m "let f (id -> x) = x in f 1" -XViewPatterns
+m "let f :: Int -> State Int (); f (id -> x) = put x in runState (f 1) 1" --module Control.Monad.State -XViewPatterns -XFlexibleContexts
 ## Test qualified imports
 m "M.map (+1) $ M.fromList [(1,2), (3,4)]" &&
 echo "\nOK, all the valid expressions worked out well." &&
