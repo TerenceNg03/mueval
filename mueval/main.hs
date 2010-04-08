@@ -10,5 +10,5 @@ import System.Environment
 
 main :: IO ()
 main = do args <- getArgs
-          let opts = getOptions args
-          forkedMain opts
+          -- force parse errors in main's thread
+          forkedMain $! getOptions args
