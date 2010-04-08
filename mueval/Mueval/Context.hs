@@ -4,7 +4,6 @@ module Mueval.Context (
   qualifiedModules,
 ) where
 
-import Data.List (elem)
 
 -----------------------------------------------------------------------------
 

@@ -17,8 +17,8 @@ import qualified System.IO.UTF8 as UTF (putStrLn)
 import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
                                      installedModulesInScope, languageExtensions,
                                      typeOf, setTopLevelModules, runInterpreter, glasgowExtensions,
-                                     OptionVal(..), Extension(ExtendedDefaultRules),
-                                     Interpreter, InterpreterError(..),GhcError(..))
+                                     OptionVal(..), Interpreter,
+                                     InterpreterError(..),GhcError(..))
 
 import Mueval.ArgsParse (Options(..))
 import qualified Mueval.Resources as MR (limitResources) 
