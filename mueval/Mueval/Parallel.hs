@@ -12,10 +12,11 @@ import Mueval.ArgsParse
 
 -- | Fork off a thread which will sleep and then kill off the specified thread.
 watchDog :: Int -> ThreadId -> IO ()
-watchDog tout tid = do installHandler sigXCPU
+watchDog tout tid = do _ <- installHandler sigXCPU
                                           (CatchOnce
                                            $ throwTo tid $ ErrorCall "Time limit exceeded.") Nothing
-                       forkIO $ do threadDelay (tout * 700000)
+                       _ <- forkIO $ do
+                                   threadDelay (tout * 700000)
                                    -- Time's up. It's a good day to die.
                                    throwTo tid (ErrorCall "Time limit exceeded")
                                    killThread tid -- Die now, srsly.
@@ -26,7 +27,7 @@ watchDog tout tid = do installHandler sigXCPU
 -- | A basic blocking operation.
 block :: (t -> MVar a -> IO t1) -> t -> IO a
 block f opts = do  mvar <- newEmptyMVar
-                   f opts mvar
+                   _ <- f opts mvar
                    takeMVar mvar -- block until ErrorCall, or forkedMain succeeds
 
 -- | Using MVars, block on forkedMain' until it finishes.

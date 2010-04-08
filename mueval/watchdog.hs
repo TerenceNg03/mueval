@@ -14,10 +14,11 @@ import System.Exit
 main :: IO ()
 main = do args <- getArgs
           hdl <- runProcess "mueval-core" args Nothing Nothing Nothing Nothing Nothing
-          forkIO (do threadDelay (7 * 700000)
+          _ <- forkIO $ do
+                     threadDelay (7 * 700000)
                      status <- getProcessExitCode hdl
                      case status of 
                          Nothing -> terminateProcess hdl >> exitWith (ExitFailure 1)
-                         Just a -> exitWith a)
+                         Just a -> exitWith a
           stat <- waitForProcess hdl
           exitWith stat
