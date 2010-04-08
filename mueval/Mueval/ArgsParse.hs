@@ -16,6 +16,7 @@ data Options = Options
    , user :: String
    , printType :: Bool
    , extensions :: Bool
+   , namedExtensions :: [String]
    , noImports :: Bool
    , rLimits :: Bool
  } deriving Show
@@ -28,6 +29,7 @@ defaultOptions = Options { expression = ""
                            , loadFile = ""
                            , printType = False
                            , extensions = False
+                           , namedExtensions = []
                            , noImports = False
                            , rLimits = False }
 
@@ -52,6 +54,9 @@ options = [Option "p"     ["password"]
            Option "E"     ["Extensions"]
                       (NoArg (\opts -> opts { extensions = True}))
                       "Whether to enable the Glasgow extensions to Haskell '98. Defaults to false, but enabling is useful for QuickCheck.",
+           Option "X"     ["extension"]
+                      (ReqArg (\e opts -> opts { namedExtensions = e : namedExtensions opts }) "EXTENSION")
+                      "Pass additional flags enabling extensions just like you would to ghc. Example: -XViewPatterns",
            Option "e"     ["expression"]
                       (ReqArg (\e opts -> opts { expression = e}) "EXPRESSION")
                       "The expression to be evaluated.",

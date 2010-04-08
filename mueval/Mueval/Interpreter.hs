@@ -2,7 +2,7 @@
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
-import Control.Monad (when,mplus)
+import Control.Monad (guard,mplus,unless,when)
 import Control.Monad.Trans (MonadIO)
 import Control.Monad.Writer (Any(..),runWriterT,tell)
 import Data.Char (isDigit)
@@ -30,10 +30,12 @@ import qualified Mueval.Context  as MC (qualifiedModules)
    functions, typecheck, set resource limits for this
    thread, and do some error handling. -}
 interpreter :: Options -> Interpreter (String,String,String)
-interpreter Options { extensions = exts, rLimits = rlimits, 
+interpreter Options { extensions = exts, namedExtensions = nexts,
+                      rLimits = rlimits,
                       loadFile = load, expression = expr,
                       modules = m } = do
-                                  when exts $ set [languageExtensions := (ExtendedDefaultRules:glasgowExtensions)]
+                                  let lexts = (guard exts >> glasgowExtensions) ++ map read nexts
+                                  unless (null lexts) $ set [languageExtensions := lexts]
 
                                   reset -- Make sure nothing is available
                                   set [installedModulesInScope := False]
