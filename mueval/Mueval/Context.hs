@@ -38,8 +38,6 @@ defaultModules = ["Prelude",
                   "Control.Monad.State",
                   "Control.Monad.State",
                   "Control.Monad.Writer",
-                  "Control.Parallel",
-                  "Control.Parallel.Strategies",
                   "Data.Array",
                   "Data.Bits",
                   "Data.Bool",
@@ -57,8 +55,9 @@ defaultModules = ["Prelude",
                   "Data.Monoid",
 {- -- Commented out because they are not necessarily available. If anyone misses
    -- them, perhaps we could look into forcing a dependency on them in the Cabal
-   -- file. For now, we'll let them be optional.
-
+   -- file or perhaps enable them via a CLI flag. For now, we'll stash them in a comment.
+               "Control.Parallel",
+               "Control.Parallel.Strategies",
                "Data.Number.BigFloat",
                "Data.Number.CReal",
                "Data.Number.Dif",
