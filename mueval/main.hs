@@ -7,8 +7,11 @@ module Main (main) where
 import Mueval.Parallel
 import Mueval.ArgsParse (getOptions)
 import System.Environment
+import System.Exit
 
 main :: IO ()
 main = do args <- getArgs
           -- force parse errors in main's thread
-          forkedMain $! getOptions args
+          case getOptions args of
+              Left (n,s) -> putStrLn s >> if n==0 then exitSuccess else exitFailure
+              Right opts -> forkedMain $! opts

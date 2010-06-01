@@ -1,6 +1,7 @@
 module Mueval.ArgsParse (Options(..), interpreterOpts, getOptions) where
 
 import Control.Monad (liftM)
+import Data.Either
 import System.Console.GetOpt
 
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
@@ -73,19 +74,19 @@ options = [Option "p"     ["password"]
                        "Prints out usage info."
           ]
 
-interpreterOpts :: [String] -> (Options, [String])
-interpreterOpts argv =
-       let (o,n,ers) = getOpt Permute options argv in
-       let msg = usageInfo header options in
-       let opts = foldl (flip id) defaultOptions o in
-       if help opts then error msg else
-        if not (null ers) then error (concat ers ++ msg) else
-        (opts, n)
+interpreterOpts :: [String] -> Either (Int, String) Options
+interpreterOpts argv
+    | help opts = Left (0,msg) -- 0 is success
+    | not (null ers) = Left (1, concat ers ++ msg) -- 1 is error
+    | otherwise = Right opts
+  where (o,_,ers) = getOpt Permute options argv
+        msg = usageInfo header options
+        opts = foldl (flip id) defaultOptions o
 
 header :: String
 header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
 
 -- | Just give us the end result options; this parsing for
 --   us. Bonus points for handling UTF.
-getOptions :: [String] -> Options
-getOptions = fst . interpreterOpts . map Codec.decodeString
+getOptions :: [String] -> Either (Int, String) Options
+getOptions = interpreterOpts . map Codec.decodeString
