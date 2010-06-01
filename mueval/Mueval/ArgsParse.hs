@@ -74,10 +74,10 @@ options = [Option "p"     ["password"]
                        "Prints out usage info."
           ]
 
-interpreterOpts :: [String] -> Either (Int, String) Options
+interpreterOpts :: [String] -> Either (Bool, String) Options
 interpreterOpts argv
-    | help opts = Left (0,msg) -- 0 is success
-    | not (null ers) = Left (1, concat ers ++ msg) -- 1 is error
+    | help opts = Left (True,msg)
+    | not (null ers) = Left (False, concat ers ++ msg)
     | otherwise = Right opts
   where (o,_,ers) = getOpt Permute options argv
         msg = usageInfo header options
@@ -88,5 +88,5 @@ header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
 
 -- | Just give us the end result options; this parsing for
 --   us. Bonus points for handling UTF.
-getOptions :: [String] -> Either (Int, String) Options
+getOptions :: [String] -> Either (Bool, String) Options
 getOptions = interpreterOpts . map Codec.decodeString

@@ -13,5 +13,5 @@ main :: IO ()
 main = do args <- getArgs
           -- force parse errors in main's thread
           case getOptions args of
-              Left (n,s) -> putStrLn s >> if n==0 then exitSuccess else exitFailure
+              Left (n,s) -> putStrLn s >> if n then exitSuccess else exitFailure
               Right opts -> forkedMain $! opts
