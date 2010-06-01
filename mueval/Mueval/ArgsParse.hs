@@ -19,6 +19,7 @@ data Options = Options
    , namedExtensions :: [String]
    , noImports :: Bool
    , rLimits :: Bool
+   , help :: Bool
  } deriving Show
 
 defaultOptions :: Options
@@ -31,7 +32,8 @@ defaultOptions = Options { expression = ""
                            , extensions = False
                            , namedExtensions = []
                            , noImports = False
-                           , rLimits = False }
+                           , rLimits = False
+                           , help = False }
 
 options :: [OptDescr (Options -> Options)]
 options = [Option "p"     ["password"]
@@ -65,14 +67,23 @@ options = [Option "p"     ["password"]
                       "Whether to enable printing of inferred type and the expression (as Mueval sees it). Defaults to false.",
            Option "r"     ["rlimits"]
                       (NoArg (\opts -> opts { rLimits = True}))
-                      "Enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems." ]
+                      "Enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems.",
+           Option "h" ["help"]
+                       (NoArg (\opts -> opts { help = True}))
+                       "Prints out usage info."
+          ]
 
 interpreterOpts :: [String] -> (Options, [String])
 interpreterOpts argv =
-       case getOpt Permute options argv of
-          (o,n,[]) -> (foldl (flip id) defaultOptions o, n)
-          (_,_,er) -> error (concat er ++ usageInfo header options)
-      where header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
+       let (o,n,ers) = getOpt Permute options argv in
+       let msg = usageInfo header options in
+       let opts = foldl (flip id) defaultOptions o in
+       if help opts then error msg else
+        if not (null ers) then error (concat ers ++ msg) else
+        (opts, n)
+
+header :: String
+header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
 
 -- | Just give us the end result options; this parsing for
 --   us. Bonus points for handling UTF.
