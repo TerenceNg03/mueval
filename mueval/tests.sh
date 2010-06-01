@@ -32,7 +32,7 @@ m '()' --module=Prelude
 m 'join [[1]]' --module Data.List --module Control.Monad --module Data.Char
 m 'join ["baz"]' --module Data.List --module Data.Char --module Control.Monad
 m 'map toUpper "foobar"' --module Data.List --module Data.Char --module Control.Monad
-m 'tail $ take 50 $ repeat "foo"' --module Data.List --timelimit 3
+m 'tail $ take 50 $ repeat "foo"' --module Data.List --time-limit 3
 ## This tests whether the SimpleReflect stuff is working. Output should be: "(f 1 (f 2 (f 3 (f 4 (f 5 z)))))\"
 m 'foldr (\x y -> concat ["(f ",x," ",y,")"]) "z" (map show [1..5])'
 ## Test 1024-char limit
@@ -68,14 +68,14 @@ m 'show []' -E
 m '(+1) <$> [1..3]'
 ## Now let's do file loading
 echo "module TmpModule (foo, bar) where { foo x = x + 1; bar x = x + 2 }" > "TmpModule.hs"
-m '1+1' --loadfile="TmpModule.hs"
-m 'foo 1' --loadfile="TmpModule.hs"
-m 'bar 1' --loadfile="TmpModule.hs"
-m 'foo $ foo 1' --loadfile="TmpModule.hs"
+m '1+1' --load-file="TmpModule.hs"
+m 'foo 1' --load-file="TmpModule.hs"
+m 'bar 1' --load-file="TmpModule.hs"
+m 'foo $ foo 1' --load-file="TmpModule.hs"
 rm "TmpModule.hs"
-## Test the --noimports function
+## Test the --no-imports function
 ## TODO: more extensive tests of this
-m '()' --noimports
+m '()' --no-imports
 ## Test naming individual syntactic extensions
 m "let f (id -> x) = x in f 1" -XViewPatterns
 m "let f :: Int -> State Int (); f (id -> x) = put x in runState (f 1) 1" --module Control.Monad.State -XViewPatterns -XFlexibleContexts
@@ -87,7 +87,7 @@ echo "\nOK, all the valid expressions worked out well." &&
 echo "Now let's test various misbehaved expressions \n" &&
 ## test infinite loop
 m 'let x = x in x' ||
-m 'let x y = x 1 in x 1' --timelimit 3 ||
+m 'let x y = x 1 in x 1' --time-limit 3 ||
 m 'let x = x + 1 in x' ||
 ## Similarly, but with a strict twist
 m 'let f :: Int -> Int; f x = f $! (x+1) in f 0' ||
