@@ -21,11 +21,11 @@ import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules,
                                      InterpreterError(..),GhcError(..))
 
 import Mueval.ArgsParse (Options(..))
-import qualified Mueval.Resources as MR (limitResources) 
+import qualified Mueval.Resources as MR (limitResources)
 import qualified Mueval.Context  as MC (qualifiedModules)
 
 {- | The actual calling of Hint functionality. The heart of this just calls
-   'eval', but we do so much more - we disable Haskell extensions, 
+   'eval', but we do so much more - we disable Haskell extensions,
    hide all packages, make sure one cannot call unimported
    functions, typecheck, set resource limits for this
    thread, and do some error handling. -}
@@ -60,15 +60,15 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                                   result <- eval expr
 
                                   return (expr, etype, result)
- 
+
 -- | Wrapper around 'interpreter'; supplies a fresh GHC API session and
 -- error-handling. The arguments are largely passed on, and the results lightly parsed.
 interpreterSession :: Options -> IO ()
 interpreterSession opts = do r <- runInterpreter (interpreter opts)
-                             case r of 
+                             case r of
                                  Left err -> printInterpreterError err
                                  Right (e,et,val) -> when (printType opts) (sayIO e >> sayIO et) >> sayIO val
-                                                                       
+
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
                 liftIO $ copyFile canonfile $ "/tmp/" ++ takeFileName canonfile
