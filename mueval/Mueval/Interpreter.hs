@@ -7,7 +7,7 @@ import Control.Monad.Trans (MonadIO)
 import Control.Monad.Writer (Any(..),runWriterT,tell)
 import Data.Char (isDigit)
 import Data.List (stripPrefix)
-import System.Directory (copyFile, makeRelativeToCurrentDirectory, setCurrentDirectory)
+import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile, setCurrentDirectory)
 import System.Exit (exitFailure)
 import System.FilePath.Posix (takeFileName)
 import qualified Control.Exception.Extensible as E (evaluate,catch,SomeException(..))
@@ -39,9 +39,8 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
 
                                   reset -- Make sure nothing is available
                                   set [installedModulesInScope := False]
-
+                                  let lfl' = takeFileName load
                                   when (load /= "") $ do liftIO (mvload load)
-                                                         let lfl' = takeFileName load
                                                          loadModules [lfl']
                                                          -- We need to mangle the String to
                                                          -- turn a filename into a module.
@@ -53,6 +52,9 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                                     Nothing -> return ()
                                     Just ms -> do let unqualModules =  zip ms (repeat Nothing)
                                                   setImportsQ (unqualModules ++ MC.qualifiedModules)
+
+                                  -- clean up our tmp file here; must be after setImportsQ
+                                  when (load /= "") $ liftIO (removeFile lfl')
 
                                   -- we don't check if the expression typechecks
                                   -- this way we get an "InterpreterError" we can display
