@@ -104,8 +104,8 @@ m 'Unsafe.unsafeCoerce (readFile "/etc/passwd"))' ||
 m 'Foreign.unsafePerformIO $ readFile "/etc/passwd"' ||
 m 'Data.ByteString.Internal.inlinePerformIO (readFile "/etc/passwd")' ||
 ## We need a bunch of IO tests, but I guess this will do for now.
-m "let foo = readFile \"/etc/passwd\" >>= print in foo" ||
-m "writeFile \"tmp.txt\" \"foo bar\"" ||
+m 'let foo = readFile "/etc/passwd" >>= print in foo' ||
+m 'writeFile "tmp.txt" "foo bar"' ||
 ## Evil array code, should fail (but not with a segfault!)
 m  "array (0::Int, maxBound) [(1000000,'x')]" --module Data.Array ||
-echo "Done, apparently successfully"
+echo "Done, apparently all evil expressions failed to do evil"
