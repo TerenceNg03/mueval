@@ -96,10 +96,13 @@ m 'let x = 1 + x in x' ||
 m 'let fix f = let x = f x in x in foldr (.) id (repeat read) $ fix show' ||
 ## Let's stress the time limits
 m 'let {p x y f = f x y; f x = p x x} in f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f f)))))))))))))))))) f' ||
-m " runST (unsafeIOToST (readFile \"/etc/passwd\"))" ||
+# Are evil functions in scope?
+m 'runST (unsafeIOToST (readFile "/etc/passwd"))' ||
+m 'unsafeCoerce (readFile "/etc/passwd"))' ||
 ### Can we bypass the whitelisting by fully qualified module names?
-m "Foreign.unsafePerformIO $ readFile \"/etc/passwd\"" ||
-m "Data.ByteString.Internal.inlinePerformIO $ readFile \"/etc/passwd\"" ||
+m 'Unsafe.unsafeCoerce (readFile "/etc/passwd"))' ||
+m 'Foreign.unsafePerformIO $ readFile "/etc/passwd"' ||
+m 'Data.ByteString.Internal.inlinePerformIO (readFile "/etc/passwd")' ||
 ## We need a bunch of IO tests, but I guess this will do for now.
 m "let foo = readFile \"/etc/passwd\" >>= print in foo" ||
 m "writeFile \"tmp.txt\" \"foo bar\"" ||
