@@ -33,7 +33,7 @@ Note that mueval will avoid all the attacks I've been able to test on it:
 LOADING FROM FILE:
 Like Lambdabot, Mueval is capable of loading a file and its definitions. This is useful to get a kind of persistence. Suppose you have a file "L.hs", with a function 'bar = (+1)' in it; then 'mueval --loadfile=L.hs --expression="bar 1"' will evaluate to, as one would expect, '2'.
 
-It's worth noting that definitions and module imports in the loaded *ARE NOT* fully checked like the expression is. The resource limits and timeouts still apply, but little else. So if you are dynamically adding functions and module imports, you *MUST* secure them yourself or accept the loss of security. Currently, all known 'evil' expressions cause Mueval to exit with an error (a non-zero exit code), so my advice is to do something like 'mueval --expression foo && echo "\n" >> L.hs && echo foo >> L.hs'.
+It's worth noting that definitions and module imports in the loaded *ARE NOT* fully checked like the expression is. The resource limits and timeouts still apply, but little else. So if you are dynamically adding functions and module imports, you *MUST* secure them yourself or accept the loss of security. Currently, all known 'evil' expressions cause Mueval to exit with an error (a non-zero exit code), so my advice is to do something like 'mueval --expression foo && echo "\n" >> L.hs && echo foo >> L.hs'. (That is, only accept new expressions which evaluate successfully.)
 
 SUMMARY:
 Anyway, it's my hope that this will be useful as an example or useful in itself for people endeavoring to fix the Lambdabot situation or just in safely running code period.
