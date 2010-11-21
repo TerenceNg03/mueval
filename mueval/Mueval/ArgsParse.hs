@@ -53,7 +53,7 @@ options = [Option "p"     ["password"]
                       "A module we should import functions from for evaluation. (Can be given multiple times.)",
            Option "n"     ["no-imports"]
                       (NoArg (\opts -> opts { noImports = True}))
-                      "Whether to import any default modules, such as Prelude; this is useful if you are loading a file which, say, redefines Prelude operators.",
+                      "Whether to import any default modules, such as Prelude; this is useful if you are loading a file which, say, redefines Prelude operators. This can be subverted by using --load-file.",
            Option "E"     ["Extensions"]
                       (NoArg (\opts -> opts { extensions = True}))
                       "Whether to enable the Glasgow extensions to Haskell '98. Defaults to false, but enabling is useful for QuickCheck.",
