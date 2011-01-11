@@ -1,7 +1,6 @@
 module Mueval.ArgsParse (Options(..), interpreterOpts, getOptions) where
 
 import Control.Monad (liftM)
-import Data.Either
 import System.Console.GetOpt
 
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
