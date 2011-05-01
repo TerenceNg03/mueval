@@ -63,6 +63,13 @@ m "listArray (1,10) ['a'..]"
 m 'let f = (id *** id) in f (3, 4)'
 ### Test Control.Applicative
 m "(foldr (liftA2 (||)) (const False) [isDigit, isAlpha]) '3'"
+### Test SimpleReflect <http://twanvl.nl/blog/haskell/simple-reflection-of-expressions>
+m "sum $ map (*x) [1..5]"
+m "iterate (^2) x"
+m "scanl f x [a,b,c]"
+m "zipWith3 f [1,2..] [1,3..] [1,4..] :: [Expr]"
+m "sum [1..5] :: Expr"
+m "foldr f x [1..5]"
 ## Test defaulting of expressions
 m 'show []' -E
 m '(+1) <$> [1..3]'
