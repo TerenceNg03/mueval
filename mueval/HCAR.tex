@@ -6,30 +6,32 @@
 \status{active development}
 \makeheader
 
-Mueval is a code evaluator for Haskell; it employs the GHC API as provided by the Hint library (\url{http://haskell.org/communities/11-2008/html/report.html#hint}). It uses a variety of techniques to evaluate arbitrary Haskell expressions safely \& securely. Since it was begun in June 2008, tremendous progress has been made; it is currently used in Lambdabot live in \#haskell). Mueval can also be called from the command-line.
+See: \url{http://www.haskell.org/communities/05-2010/html/report.html#sect5.3.3}.
 
-Mueval features:
-\begin{itemize}
-\item A comprehensive test-suite of expressions which should and should not work
-\item Defeats all known attacks
-\item Optional resource limits and module imports
-\item The ability to load in definitions from a specified file
-\item Parses Haskell expressions with haskell-src-exts and tests against black- and white-lists
-\item A process-level watchdog, to work around past and future GHC issues with thread-level watchdogs
-\item Cabalized
-\end{itemize}
+% Mueval is a code evaluator for Haskell; it employs the GHC API as provided by the Hint library (\url{http://haskell.org/communities/11-2008/html/report.html#hint}). It uses a variety of techniques to evaluate arbitrary Haskell expressions safely \& securely. Since it was begun in June 2008, tremendous progress has been made; it is currently used in Lambdabot live in \#haskell). Mueval can also be called from the command-line.
 
-Since the November 2009 HCAR report, the internals have been cleaned up further, a number of minor bugs squashed, tests added, and mueval updated to avoid bitrot.
+% Mueval features:
+% \begin{itemize}
+% \item A comprehensive test-suite of expressions which should and should not work
+% \item Defeats all known attacks
+% \item Optional resource limits and module imports
+% \item The ability to load in definitions from a specified file
+% \item Parses Haskell expressions with haskell-src-exts and tests against black- and white-lists
+% \item A process-level watchdog, to work around past and future GHC issues with thread-level watchdogs
+% \item Cabalized
+% \end{itemize}
 
-We are currently working on the following:
-\begin{itemize}
-\item Refactoring modules to render Mueval more useful as a library
-\item Removing the POSIX-only requirement
-\item Merging in Chris Done's \href{http://github.com/chrisdone/mueval-interactive}{mueval-interactive} fork, which powers \url{http://tryhaskell.org/}
-\end{itemize}
+% Since the November 2009 HCAR report, the internals have been cleaned up further, a number of minor bugs squashed, tests added, and mueval updated to avoid bitrot.
 
-\FurtherReading
-The source repository is available:
- \texttt{darcs get}
- \text{\url{http://code.haskell.org/mubot/}}
+% We are currently working on the following:
+% \begin{itemize}
+% \item Refactoring modules to render Mueval more useful as a library
+% \item Removing the POSIX-only requirement
+% \item Merging in Chris Done's \href{http://github.com/chrisdone/mueval-interactive}{mueval-interactive} fork, which powers \url{http://tryhaskell.org/}
+% \end{itemize}
+
+% \FurtherReading
+% The source repository is available:
+%  \texttt{darcs get}
+%  \text{\url{http://code.haskell.org/mubot/}}
 \end{hcarentry}
