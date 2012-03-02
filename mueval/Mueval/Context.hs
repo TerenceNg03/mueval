@@ -23,7 +23,7 @@ defaultModules :: [String]
 defaultModules = ["Prelude",
                   "ShowQ",
                   "ShowFun",
-                  "SimpleReflect",
+                  "Debug.SimpleReflect",
                   "Data.Function",
                   "Control.Applicative",
                   "Control.Arrow",
