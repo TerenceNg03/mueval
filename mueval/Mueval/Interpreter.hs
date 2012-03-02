@@ -18,11 +18,17 @@ import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules,
                                      installedModulesInScope, languageExtensions,
                                      typeOf, setTopLevelModules, runInterpreter, glasgowExtensions,
                                      OptionVal(..), Interpreter,
-                                     InterpreterError(..),GhcError(..))
+                                     InterpreterError(..),GhcError(..),
+                                     Extension(UnknownExtension))
 
 import Mueval.ArgsParse (Options(..))
 import qualified Mueval.Resources as MR (limitResources)
 import qualified Mueval.Context  as MC (qualifiedModules)
+
+readExt :: String -> Extension
+readExt s = case reads s of
+  [(e,[])] -> e
+  _        -> UnknownExtension s
 
 {- | The actual calling of Hint functionality. The heart of this just calls
    'eval', but we do so much more - we disable Haskell extensions,
@@ -34,7 +40,7 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                       rLimits = rlimits,
                       loadFile = load, expression = expr,
                       modules = m } = do
-                                  let lexts = (guard exts >> glasgowExtensions) ++ map read nexts
+                                  let lexts = (guard exts >> glasgowExtensions) ++ map readExt nexts
                                   unless (null lexts) $ set [languageExtensions := lexts]
 
                                   reset -- Make sure nothing is available
