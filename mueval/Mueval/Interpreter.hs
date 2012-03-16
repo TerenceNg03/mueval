@@ -120,7 +120,7 @@ exceptionMsg :: String
 exceptionMsg = "*Exception: "
 
 -- | Renders the input String including its exceptions using @exceptionMsg@
-render :: (Control.Monad.Trans.MonadIO m)
+render :: (Control.Monad.Trans.MonadIO m, Functor m)
           => Int -- ^ max number of characters to include
           -> String -- ^ input
           -> m (String, Bool) -- ^ ( output, @True@ if we found an exception )
