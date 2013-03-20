@@ -1,9 +1,8 @@
 module Mueval.Parallel where
 
-import Prelude hiding (catch)
 import Control.Concurrent   (forkIO, killThread, myThreadId, threadDelay, throwTo, ThreadId)
 import System.Posix.Signals (sigXCPU, installHandler, Handler(CatchOnce))
-import Control.Exception.Extensible (ErrorCall(..),SomeException,catch)
+import Control.Exception.Extensible as E (ErrorCall(..),SomeException,catch)
 import Control.Concurrent.MVar (newEmptyMVar, putMVar, takeMVar, MVar)
 import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
 
@@ -43,7 +42,7 @@ forkedMain' opts mvar = do mainId <- myThreadId
                            -- Our modules and expression are set up. Let's do stuff.
                            forkIO $ (interpreterSession (checkImport opts)
                                                             >> putMVar mvar "Done.")
-                                      `catch` \e -> throwTo mainId (e::SomeException)
+                                      `E.catch` \e -> throwTo mainId (e::SomeException)
                                                              -- bounce exceptions to the main thread,
                                                              -- so they are reliably printed out
           where checkImport x = if noImports x then x{modules=Nothing} else x
