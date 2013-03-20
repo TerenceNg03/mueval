@@ -5,7 +5,7 @@ import System.Console.GetOpt
 
 import qualified Codec.Binary.UTF8.String as Codec (decodeString)
 
-import Mueval.Context (defaultModules)
+import Mueval.Context (defaultModules, defaultPackages)
 
 -- | See the results of --help for information on what each option means.
 data Options = Options
@@ -19,6 +19,8 @@ data Options = Options
    , namedExtensions :: [String]
    , noImports :: Bool
    , rLimits :: Bool
+   , packageTrust :: Bool
+   , trustedPackages :: [String]
    , help :: Bool
  } deriving Show
 
@@ -33,6 +35,8 @@ defaultOptions = Options { expression = ""
                            , namedExtensions = []
                            , noImports = False
                            , rLimits = False
+                           , packageTrust = False
+                           , trustedPackages = defaultPackages
                            , help = False }
 
 options :: [OptDescr (Options -> Options)]
@@ -68,6 +72,12 @@ options = [Option "p"     ["password"]
            Option "r"     ["resource-limits"]
                       (NoArg (\opts -> opts { rLimits = True}))
                       "Enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems.",
+           Option "S"     ["package-trust"]
+                      (NoArg (\opts -> opts {packageTrust = True, namedExtensions = "Safe" : namedExtensions opts}))
+                      "Enable Safe-Haskell package trust system",
+           Option "s"     ["trust"]
+                      (ReqArg (\e opts -> opts {trustedPackages = e : trustedPackages opts}) "PACKAGE")
+                      "Specify a package to be trusted by Safe Haskell (ignored unless -S also present)",
            Option "h" ["help"]
                        (NoArg (\opts -> opts { help = True}))
                        "Prints out usage info."

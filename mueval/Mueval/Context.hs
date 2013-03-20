@@ -1,6 +1,7 @@
 module Mueval.Context (
   cleanModules,
   defaultModules,
+  defaultPackages,
   qualifiedModules,
 ) where
 
@@ -78,6 +79,12 @@ defaultModules = ["Prelude",
                "Text.PrettyPrint.HughesPJ",
                "Text.Printf"]
 
+defaultPackages :: [String]
+defaultPackages = [ "base"
+                  , "bytestring"
+                  , "containers"
+                  ]
+
 {- | Borrowed from Lambdabot, this is the whitelist of modules which should be
    safe to import functions from, but which we don't want to import by
    default.
@@ -97,7 +104,7 @@ qualifiedModules = [
                ("Data.ByteString.Lazy", Just "BSL"),
                ("Data.ByteString.Lazy.Char8", Just "BSLC"),
                ("Data.Foldable", Just "Data.Foldable"),
-               ("Data.Generics", Just "Data.Generics"),
+--               ("Data.Generics", Just "Data.Generics"),
                ("Data.IntMap", Just "IM"),
                ("Data.IntSet", Just "IS"),
                ("Data.Map", Just "M"),

@@ -20,6 +20,7 @@ import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules,
                                      OptionVal(..), Interpreter,
                                      InterpreterError(..),GhcError(..),
                                      Extension(UnknownExtension))
+import Language.Haskell.Interpreter.Unsafe (unsafeSetGhcOption)
 
 import Mueval.ArgsParse (Options(..))
 import qualified Mueval.Resources as MR (limitResources)
@@ -39,9 +40,16 @@ interpreter :: Options -> Interpreter (String,String,String)
 interpreter Options { extensions = exts, namedExtensions = nexts,
                       rLimits = rlimits,
                       loadFile = load, expression = expr,
+                      packageTrust = trust,
+                      trustedPackages = trustPkgs,
                       modules = m } = do
                                   let lexts = (guard exts >> glasgowExtensions) ++ map readExt nexts
                                   unless (null lexts) $ set [languageExtensions := lexts]
+                                  when trust $ do
+                                    unsafeSetGhcOption "-fpackage-trust"
+                                    unsafeSetGhcOption "-distrust-all-packages"
+                                    flip mapM_ (trustPkgs >>= words) $ \pkg ->
+                                      unsafeSetGhcOption ("-trust " ++ pkg)
 
                                   reset -- Make sure nothing is available
                                   set [installedModulesInScope := False]
