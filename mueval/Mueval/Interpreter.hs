@@ -47,7 +47,6 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                                   unless (null lexts) $ set [languageExtensions := lexts]
                                   when trust $ do
                                     unsafeSetGhcOption "-fpackage-trust"
-                                    unsafeSetGhcOption "-distrust-all-packages"
                                     flip mapM_ (trustPkgs >>= words) $ \pkg ->
                                       unsafeSetGhcOption ("-trust " ++ pkg)
 

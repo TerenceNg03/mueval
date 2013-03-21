@@ -80,7 +80,8 @@ defaultModules = ["Prelude",
                "Text.Printf"]
 
 defaultPackages :: [String]
-defaultPackages = [ "base"
+defaultPackages = [ "array"
+                  , "base"
                   , "bytestring"
                   , "containers"
                   ]
