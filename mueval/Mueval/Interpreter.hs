@@ -44,7 +44,9 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                       trustedPackages = trustPkgs,
                       modules = m } = do
                                   let lexts = (guard exts >> glasgowExtensions) ++ map readExt nexts
-                                  unless (null lexts) $ set [languageExtensions := lexts]
+                                  -- Explicitly adding ImplicitPrelude because of 
+                                  -- http://darcsden.com/jcpetruzza/hint/issue/1
+                                  unless (null lexts) $ set [languageExtensions := (UnknownExtension "ImplicitPrelude" : lexts)]
                                   when trust $ do
                                     unsafeSetGhcOption "-fpackage-trust"
                                     flip mapM_ (trustPkgs >>= words) $ \pkg ->
