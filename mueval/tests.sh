@@ -77,6 +77,7 @@ m '(+1) <$> [1..3]'
 echo "module TmpModule (foo, bar) where { foo x = x + 1; bar x = x + 2 }" > "TmpModule.hs"
 m '1+1' --load-file="TmpModule.hs"
 m 'foo 1' --load-file="TmpModule.hs"
+m "foo 1" -S --load-file="TmpModule.hs"
 m 'bar 1' --load-file="TmpModule.hs"
 m 'foo $ foo 1' --load-file="TmpModule.hs"
 rm "TmpModule.hs"
@@ -86,6 +87,13 @@ m '()' --no-imports
 ## Test naming individual syntactic extensions
 m "let f (id -> x) = x in f 1" -XViewPatterns
 m "let f :: Int -> State Int (); f (id -> x) = put x in runState (f 1) 1" --module Control.Monad.State -XViewPatterns -XFlexibleContexts
+## Test Safe-Haskell-approved code
+m "()" -S
+m "runReader ask 42" -S --module Control.Monad.Reader
+## Setup for later Safe-Haskell tests and ensure that behavior is as
+## expected without SH activated
+echo 'module TmpModule (unsafePerformIO) where {import System.IO.Unsafe}' > "TmpModule.hs"
+m  'unsafePerformIO (readFile "/etc/passwd")' --load-file="TmpModule.hs"
 ## Test qualified imports
 m "M.map (+1) $ M.fromList [(1,2), (3,4)]" &&
 echo "\nOK, all the valid expressions worked out well." &&
@@ -115,4 +123,8 @@ m 'let foo = readFile "/etc/passwd" >>= print in foo' ||
 m 'writeFile "tmp.txt" "foo bar"' ||
 ## Evil array code, should fail (but not with a segfault!)
 m  "array (0::Int, maxBound) [(1000000,'x')]" --module Data.Array ||
+## code that should be accepted without Safe Haskell but rejected with
+m  'unsafePerformIO (readFile "/etc/passwd")' -S --load-file="TmpModule.hs" ||
 echo "Done, apparently all evil expressions failed to do evil"
+
+rm TmpModule.hs
