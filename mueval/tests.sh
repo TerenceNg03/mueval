@@ -37,14 +37,6 @@ m 'tail $ take 50 $ repeat "foo"' --module Data.List --time-limit 3
 m 'foldr (\x y -> concat ["(f ",x," ",y,")"]) "z" (map show [1..5])'
 ## Test 1024-char limit
 m 'repeat 1'
-## Let's see whether the ShowQ instances for QuickCheck work
-m 'myquickcheck (1+1 == 2)' -E
-m 'myquickcheck (\x -> x == x)' -E
-m 'myquickcheck (\x -> (x :: String) == x)' -E
-## Test SmallCheck using examples from #haskell
-m 'mysmallcheck True' -E
-m 'mysmallcheck (\x -> x < (10000::Int))' -E
-m 'mysmallcheck (\x -> not x || x)' -E
 ## Test Unicode. If this fails, characters got mangled somewhere.
 m 'let (ñ) = (+) in ñ 5 5'
 ## Test default imports & have some function fun

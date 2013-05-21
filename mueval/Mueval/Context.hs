@@ -17,12 +17,11 @@ cleanModules = all (`elem` defaultModules)
    crippled; we want SimpleReflect so we can do neat things (for said neat
    things, see
    <http://twan.home.fmf.nl/blog/haskell/simple-reflection-of-expressions.details>);
-   and we want ShowQ and ShowFun to neuter IO stuff even more.
+   and we want ShowFun to neuter IO stuff even more.
    The rest should be safe to import without clashes, according to the Lambdabot
    sources. -}
 defaultModules :: [String]
 defaultModules = ["Prelude",
-                  "ShowQ",
                   "ShowFun",
                   "Debug.SimpleReflect",
                   "Data.Function",
