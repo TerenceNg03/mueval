@@ -1,10 +1,10 @@
 name:                mueval
-version:             0.9.1
+version:             0.9.1.1
 
 license:             BSD3
 license-file:        LICENSE
 author:              Gwern
-maintainer:          Gwern <gwern0@gmail.com>
+maintainer:          Gwern <gwern@gwern.net>
 
 category:            Development, Language
 synopsis:            Safely evaluate pure Haskell expressions
@@ -19,7 +19,7 @@ description:         Mueval is a Haskell interpreter. It
                      evaluation functionality. For examples and explanations, please see the README file.
                      .
                      Mueval is POSIX-only.
-homepage:            http://code.haskell.org/mubot/
+homepage:            https://github.com/gwern/mueval
 
 build-type:          Simple
 cabal-version:       >= 1.6
@@ -33,18 +33,18 @@ library
                              Mueval.ArgsParse, Mueval.Resources
         build-depends:       base>=4 && < 5, containers, directory, mtl>2, filepath, unix, process,
                              hint>=0.3.1, show>=0.3, utf8-string, Cabal, extensible-exceptions, simple-reflect
-        ghc-options:         -Wall -static -O2
+        ghc-options:         -Wall -static
 
 executable mueval-core
            main-is:       main.hs
            build-depends: base
-           ghc-options:   -Wall -static -threaded -O2
+           ghc-options:   -Wall -static -threaded
 
 executable mueval
            main-is:       watchdog.hs
            build-depends: base
-           ghc-options:   -Wall -static -threaded -O2
+           ghc-options:   -Wall -static -threaded
 
 source-repository head
-  type:     darcs
-  location: http://code.haskell.org/mubot/
+  type:     git
+  location: git://github.com/gwern/mueval.git
