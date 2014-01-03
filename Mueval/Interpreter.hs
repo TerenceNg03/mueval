@@ -2,7 +2,7 @@
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
-import Control.Monad (guard,mplus,unless,when)
+import Control.Monad (forM_,guard,mplus,unless,when)
 import Control.Monad.Trans (MonadIO)
 import Control.Monad.Writer (Any(..),runWriterT,tell)
 import Data.Char (isDigit)
@@ -44,12 +44,12 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                       trustedPackages = trustPkgs,
                       modules = m } = do
                                   let lexts = (guard exts >> glasgowExtensions) ++ map readExt nexts
-                                  -- Explicitly adding ImplicitPrelude because of 
+                                  -- Explicitly adding ImplicitPrelude because of
                                   -- http://darcsden.com/jcpetruzza/hint/issue/1
                                   unless (null lexts) $ set [languageExtensions := (UnknownExtension "ImplicitPrelude" : lexts)]
                                   when trust $ do
                                     unsafeSetGhcOption "-fpackage-trust"
-                                    flip mapM_ (trustPkgs >>= words) $ \pkg ->
+                                    forM_ (trustPkgs >>= words) $ \pkg ->
                                       unsafeSetGhcOption ("-trust " ++ pkg)
 
                                   reset -- Make sure nothing is available
