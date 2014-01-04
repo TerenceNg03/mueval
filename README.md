@@ -60,7 +60,7 @@ However, you can still manually download and unpack the Mueval tarball, and do t
 
 # See also
 
-- Chris Done's [`mueval-interactive`](https://github.com/chrisdone/mueval-interactive) fork: a persistent `mueval` (startup is slow) for use in his [Try Haskell.org](http://tryhaskell.org/)
+- Chris Done's interactive Haskell REPL website, [Try Haskell!](http://tryhaskell.org/)
 
 # Bugs
 
