@@ -15,6 +15,7 @@ data Options = Options
    , loadFile :: String
    , user :: String
    , printType :: Bool
+   , typeOnly :: Bool
    , extensions :: Bool
    , namedExtensions :: [String]
    , noImports :: Bool
@@ -31,6 +32,7 @@ defaultOptions = Options { expression = ""
                            , user = ""
                            , loadFile = ""
                            , printType = False
+                           , typeOnly = False
                            , extensions = False
                            , namedExtensions = []
                            , noImports = False
@@ -69,6 +71,9 @@ options = [Option "p"     ["password"]
            Option "i"     ["inferred-type"]
                       (NoArg (\opts -> opts { printType = True}))
                       "Whether to enable printing of inferred type and the expression (as Mueval sees it). Defaults to false.",
+           Option "T"     ["type-only"]
+                      (NoArg (\opts -> opts { typeOnly = True}))
+                      "Only print the expression and type, don't evaluate the expression. Defaults to false.",
            Option "r"     ["resource-limits"]
                       (NoArg (\opts -> opts { rLimits = True}))
                       "Enable resource limits (using POSIX rlimits). Mueval does not by default since rlimits are broken on many systems.",

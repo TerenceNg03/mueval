@@ -39,6 +39,7 @@ readExt s = case reads s of
 interpreter :: Options -> Interpreter (String,String,String)
 interpreter Options { extensions = exts, namedExtensions = nexts,
                       rLimits = rlimits,
+                      typeOnly = noEval,
                       loadFile = load, expression = expr,
                       packageTrust = trust,
                       trustedPackages = trustPkgs,
@@ -74,7 +75,9 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                                   -- we don't check if the expression typechecks
                                   -- this way we get an "InterpreterError" we can display
                                   etype <- typeOf expr
-                                  result <- eval expr
+                                  result <- if noEval
+                                               then return ""
+                                               else eval expr
 
                                   return (expr, etype, result)
 
