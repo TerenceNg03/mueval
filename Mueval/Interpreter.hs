@@ -2,27 +2,28 @@
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
-import Control.Monad (forM_,guard,mplus,unless,when)
-import Control.Monad.Trans (MonadIO)
-import Control.Monad.Writer (Any(..),runWriterT,tell)
-import Data.Char (isDigit)
-import Data.List (stripPrefix)
-import System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile, setCurrentDirectory)
-import System.Exit (exitFailure)
-import System.FilePath.Posix (takeFileName)
+import           Control.Monad (forM_,guard,mplus,unless,when)
+import           Control.Monad.Trans (MonadIO)
+import           Control.Monad.Writer (Any(..),runWriterT,tell)
+import           Data.Char (isDigit)
+import           Data.List (stripPrefix)
+import           System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile, setCurrentDirectory)
+import           System.Exit (exitFailure)
+import           System.FilePath.Posix (takeFileName)
 import qualified Control.Exception.Extensible as E (evaluate,catch,SomeException(..))
 
+import           Data.List
 import qualified System.IO.UTF8 as UTF (putStrLn)
 
-import Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
+import           Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
                                      installedModulesInScope, languageExtensions,
                                      typeOf, setTopLevelModules, runInterpreter, glasgowExtensions,
                                      OptionVal(..), Interpreter,
                                      InterpreterError(..),GhcError(..),
                                      Extension(UnknownExtension))
-import Language.Haskell.Interpreter.Unsafe (unsafeSetGhcOption)
+import           Language.Haskell.Interpreter.Unsafe (unsafeSetGhcOption)
 
-import Mueval.ArgsParse (Options(..))
+import           Mueval.ArgsParse (Options(..))
 import qualified Mueval.Resources as MR (limitResources)
 import qualified Mueval.Context  as MC (qualifiedModules)
 
@@ -87,7 +88,10 @@ interpreterSession :: Options -> IO ()
 interpreterSession opts = do r <- runInterpreter (interpreter opts)
                              case r of
                                  Left err -> printInterpreterError err
-                                 Right (e,et,val) -> when (printType opts) (sayIO e >> sayIO et) >> sayIO val
+                                 Right (e,et,val) -> do when (printType opts)
+                                                             (sayIO e >> sayIOOneLine et)
+                                                        sayIO val
+  where sayIOOneLine = sayIO . unwords . words
 
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
