@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Mueval.Context (
   cleanModules,
   defaultModules,
@@ -32,7 +33,9 @@ defaultModules = ["Prelude",
                   "Control.Monad.Error",
                   "Control.Monad.Fix",
                   "Control.Monad.Identity",
+#if !MIN_VERSION_base(4,7,0)
                   "Control.Monad.Instances",
+#endif
                   "Control.Monad.RWS",
                   "Control.Monad.Reader",
                   "Control.Monad.State",
