@@ -7,14 +7,13 @@ import           Control.Monad (forM_,guard,mplus,unless,when)
 import           Control.Monad.Trans (MonadIO)
 import           Control.Monad.Writer (Any(..),runWriterT,tell)
 import           Data.Char (isDigit)
-import           Data.List (stripPrefix)
+
 import           System.Directory
-import           System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile, setCurrentDirectory)
+
 import           System.Exit (exitFailure)
 import           System.FilePath.Posix (takeFileName)
 
 import           Data.List
-import qualified System.IO.UTF8 as UTF (putStrLn)
 
 import           Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
                                      installedModulesInScope, languageExtensions,
@@ -109,7 +108,7 @@ mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
 -- flooding. Lambdabot has a similar limit.
 sayIO :: String -> IO ()
 sayIO str = do (out,b) <- render 1024 str
-               UTF.putStrLn out
+               putStrLn out
                when b exitFailure
 
 -- | Oh no, something has gone wrong. If it's a compilation error pretty print

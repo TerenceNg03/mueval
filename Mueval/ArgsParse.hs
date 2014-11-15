@@ -4,8 +4,6 @@ module Mueval.ArgsParse (Options(..), interpreterOpts, getOptions) where
 import Control.Monad (liftM)
 import System.Console.GetOpt
 
-import qualified Codec.Binary.UTF8.String as Codec (decodeString)
-
 import Mueval.Context (defaultModules, defaultPackages)
 
 -- | See the results of --help for information on what each option means.
