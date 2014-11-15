@@ -2,15 +2,16 @@
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
+import qualified Control.Exception.Extensible as E (evaluate,catch,SomeException(..))
 import           Control.Monad (forM_,guard,mplus,unless,when)
 import           Control.Monad.Trans (MonadIO)
 import           Control.Monad.Writer (Any(..),runWriterT,tell)
 import           Data.Char (isDigit)
 import           Data.List (stripPrefix)
+import           System.Directory
 import           System.Directory (copyFile, makeRelativeToCurrentDirectory, removeFile, setCurrentDirectory)
 import           System.Exit (exitFailure)
 import           System.FilePath.Posix (takeFileName)
-import qualified Control.Exception.Extensible as E (evaluate,catch,SomeException(..))
 
 import           Data.List
 import qualified System.IO.UTF8 as UTF (putStrLn)
@@ -25,7 +26,7 @@ import           Language.Haskell.Interpreter.Unsafe (unsafeSetGhcOption)
 
 import           Mueval.ArgsParse (Options(..))
 import qualified Mueval.Resources as MR (limitResources)
-import qualified Mueval.Context  as MC (qualifiedModules)
+import qualified Mueval.Context as MC (qualifiedModules)
 
 readExt :: String -> Extension
 readExt s = case reads s of
@@ -95,8 +96,9 @@ interpreterSession opts = do r <- runInterpreter (interpreter opts)
 
 mvload :: FilePath -> IO ()
 mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
-                liftIO $ copyFile canonfile $ "/tmp/" ++ takeFileName canonfile
-                setCurrentDirectory "/tmp" -- will at least mess up relative links
+                tmpdir <- getTemporaryDirectory
+                liftIO $ copyFile canonfile $ tmpdir ++ "/" ++ takeFileName canonfile
+                setCurrentDirectory tmpdir -- will at least mess up relative links
 
 ---------------------------------
 -- Handling and outputting results
