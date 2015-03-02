@@ -11,7 +11,8 @@ import           Data.Char (isDigit)
 import           System.Directory
 
 import           System.Exit (exitFailure)
-import           System.FilePath.Posix (takeFileName)
+import           System.FilePath.Posix (takeBaseName)
+import           System.IO (openTempFile)
 
 import           Data.List
 
@@ -56,12 +57,17 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
 
                                   reset -- Make sure nothing is available
                                   set [installedModulesInScope := False]
-                                  let lfl' = takeFileName load
-                                  when (load /= "") $ do liftIO (mvload load)
-                                                         loadModules [lfl']
-                                                         -- We need to mangle the String to
-                                                         -- turn a filename into a module.
-                                                         setTopLevelModules [takeWhile (/='.') lfl']
+
+                                  -- if we're given a file of definitions, we need to first copy it to a temporary file in /tmp (cpload),
+                                  -- then tell Hint to parse/read it, then extract the 'module name' of the file,
+                                  -- and tell Hint to expose the module into memory; then we need to store the temporary file's filepath
+                                  -- so we can try to clean up after ourselves later.
+                                  lfl' <- if (load /= "") then (do { lfl <- liftIO (cpload load);
+                                                                     loadModules [lfl];
+                                                                     -- We need to mangle the String to
+                                                                     -- turn a filename into a module.
+                                                                     setTopLevelModules [takeBaseName load];
+                                                                     return lfl }) else (return "")
 
                                   liftIO $ MR.limitResources rlimits
 
@@ -70,10 +76,10 @@ interpreter Options { extensions = exts, namedExtensions = nexts,
                                     Just ms -> do let unqualModules =  zip ms (repeat Nothing)
                                                   setImportsQ (unqualModules ++ MC.qualifiedModules)
 
-                                  -- clean up our tmp file here; must be after setImportsQ
+                                  -- clean up our tmp file here; must be *after* setImportsQ
                                   when (load /= "") $ liftIO (removeFile lfl')
 
-                                  -- we don't check if the expression typechecks
+                                  -- we don't deliberately don't check if the expression typechecks
                                   -- this way we get an "InterpreterError" we can display
                                   etype <- typeOf expr
                                   result <- if noEval
@@ -93,11 +99,14 @@ interpreterSession opts = do r <- runInterpreter (interpreter opts)
                                                         sayIO val
   where sayIOOneLine = sayIO . unwords . words
 
-mvload :: FilePath -> IO ()
-mvload lfl = do canonfile <- makeRelativeToCurrentDirectory lfl
-                tmpdir <- getTemporaryDirectory
-                liftIO $ copyFile canonfile $ tmpdir ++ "/" ++ takeFileName canonfile
+-- | Given a filepath (containing function definitions), copy it to a temporary file and change directory to it, returning the new filepath.
+cpload :: FilePath -> IO FilePath
+cpload definitions = do
+                let tmpdir = "/tmp/"
+                (tempfile,_) <- System.IO.openTempFile tmpdir "mueval.hs"
+                liftIO $ copyFile definitions tempfile
                 setCurrentDirectory tmpdir -- will at least mess up relative links
+                return tempfile
 
 ---------------------------------
 -- Handling and outputting results
