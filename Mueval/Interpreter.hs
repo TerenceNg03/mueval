@@ -102,7 +102,7 @@ interpreterSession opts = do r <- runInterpreter (interpreter opts)
 -- | Given a filepath (containing function definitions), copy it to a temporary file and change directory to it, returning the new filepath.
 cpload :: FilePath -> IO FilePath
 cpload definitions = do
-                let tmpdir = "/tmp/"
+                tmpdir <- getTemporaryDirectory
                 (tempfile,_) <- System.IO.openTempFile tmpdir "mueval.hs"
                 liftIO $ copyFile definitions tempfile
                 setCurrentDirectory tmpdir -- will at least mess up relative links
