@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE FlexibleContexts #-}
 -- TODO: suggest the convenience functions be put into Hint proper?
 module Mueval.Interpreter where
 
