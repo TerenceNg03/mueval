@@ -30,7 +30,11 @@ defaultModules = ["Prelude",
                   "Control.Arrow",
                   "Control.Monad",
                   "Control.Monad.Cont",
+#if __GLASGOW_HASKELL__ >= 710
+                  "Control.Monad.Except",
+#else
                   "Control.Monad.Error",
+#endif
                   "Control.Monad.Fix",
                   "Control.Monad.Identity",
 #if !MIN_VERSION_base(4,7,0)

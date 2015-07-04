@@ -63,7 +63,6 @@ m "zipWith3 f [1,2..] [1,3..] [1,4..] :: [Expr]"
 m "sum [1..5] :: Expr"
 m "foldr f x [1..5]"
 ## Test defaulting of expressions
-m 'show []' -E
 m '(+1) <$> [1..3]'
 ## Now let's do file loading
 echo "module TmpModule (foo, bar) where { foo x = x + 1; bar x = x + 2 }" > "TmpModule.hs"
