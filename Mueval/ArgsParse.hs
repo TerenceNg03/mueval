@@ -5,6 +5,9 @@ import Control.Monad (liftM)
 import System.Console.GetOpt
 
 import Mueval.Context (defaultModules, defaultPackages)
+#if __GLASGOW_HASKELL__ < 702
+import qualified Codec.Binary.UTF8.String as Codec (decodeString)
+#endif
 
 -- | See the results of --help for information on what each option means.
 data Options = Options
