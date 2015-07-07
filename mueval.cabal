@@ -31,7 +31,7 @@ extra-source-files:  build.sh, tests.sh
 library
         exposed-modules:     Mueval.Parallel, Mueval.Context, Mueval.Interpreter,
                              Mueval.ArgsParse, Mueval.Resources
-        build-depends:       base>=4 && < 5, containers, directory, mtl>2, filepath, unix, process,
+        build-depends:       base>= 4.5 && < 5, containers, directory, mtl>2, filepath, unix, process,
                              hint>=0.3.1, show>=0.3, Cabal, extensible-exceptions, simple-reflect,
                              QuickCheck
         ghc-options:         -Wall -static

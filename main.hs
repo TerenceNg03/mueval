@@ -5,13 +5,13 @@
 module Main (main) where
 
 import Mueval.Parallel
-import Mueval.ArgsParse (getOptions)
+import Mueval.ArgsParse (interpreterOpts)
 import System.Environment
 import System.Exit
 
 main :: IO ()
 main = do args <- getArgs
           -- force parse errors in main's thread
-          case getOptions args of
+          case interpreterOpts args of
               Left (n,s) -> putStrLn s >> if n then exitSuccess else exitFailure
               Right opts -> forkedMain $! opts

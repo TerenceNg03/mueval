@@ -1,5 +1,4 @@
-{-# LANGUAGE CPP #-}
-module Mueval.ArgsParse (Options(..), interpreterOpts, getOptions) where
+module Mueval.ArgsParse (Options(..), interpreterOpts) where
 
 import Control.Monad (liftM)
 import System.Console.GetOpt
@@ -98,15 +97,3 @@ interpreterOpts argv
 
 header :: String
 header = "Usage: mueval [OPTION...] --expression EXPRESSION..."
-
--- | Just give us the end result options; this parsing for
---   us. Bonus points for handling UTF.
-getOptions :: [String] -> Either (Bool, String) Options
-getOptions = interpreterOpts . map decodeString
-
-decodeString :: String -> String
-#if __GLASGOW_HASKELL__ >= 702
-decodeString = id
-#else
-decodeString = Codec.decodeString
-#endif
