@@ -18,8 +18,8 @@ import           System.IO (openTempFile)
 import           Data.List
 
 import           Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
-                                     installedModulesInScope, languageExtensions,
-                                     typeOf, setTopLevelModules, runInterpreter, glasgowExtensions,
+                                     installedModulesInScope, languageExtensions, availableExtensions,
+                                     typeOf, setTopLevelModules, runInterpreter,
                                      OptionVal(..), Interpreter,
                                      InterpreterError(..),GhcError(..),
                                      Extension(UnknownExtension))
@@ -177,3 +177,40 @@ toStream str = E.evaluate (uncons str) `E.catch`
                 \(E.SomeException e) -> return . Exception . toStream . show $ e
     where uncons [] = End
           uncons (x:xs) = x `seq` Cons x (toStream xs)
+
+-- Copied from old hint, removed from hint since 0.5.0.
+glasgowExtensions :: [Extension]
+glasgowExtensions = intersect availableExtensions exts612 -- works also for 608 and 610
+    where exts612 = map readExt ["PrintExplicitForalls",
+                                 "ForeignFunctionInterface",
+                                 "UnliftedFFITypes",
+                                 "GADTs",
+                                 "ImplicitParams",
+                                 "ScopedTypeVariables",
+                                 "UnboxedTuples",
+                                 "TypeSynonymInstances",
+                                 "StandaloneDeriving",
+                                 "DeriveDataTypeable",
+                                 "FlexibleContexts",
+                                 "FlexibleInstances",
+                                 "ConstrainedClassMethods",
+                                 "MultiParamTypeClasses",
+                                 "FunctionalDependencies",
+                                 "MagicHash",
+                                 "PolymorphicComponents",
+                                 "ExistentialQuantification",
+                                 "UnicodeSyntax",
+                                 "PostfixOperators",
+                                 "PatternGuards",
+                                 "LiberalTypeSynonyms",
+                                 "ExplicitForAll",
+                                 "RankNTypes",
+                                 "ImpredicativeTypes",
+                                 "TypeOperators",
+                                 "RecursiveDo",
+                                 "DoRec",
+                                 "ParallelListComp",
+                                 "EmptyDataDecls",
+                                 "KindSignatures",
+                                 "GeneralizedNewtypeDeriving",
+                                 "TypeFamilies" ]
