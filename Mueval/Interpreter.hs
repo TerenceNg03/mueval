@@ -6,7 +6,7 @@ module Mueval.Interpreter where
 import qualified Control.Exception.Extensible as E (evaluate,catch,SomeException(..))
 import           Control.Monad (forM_,guard,mplus,unless,when)
 import           Control.Monad.Trans (MonadIO)
-import           Control.Monad.Writer (Any(..),runWriterT,tell)
+import           Control.Monad.Writer (runWriterT,tell)
 import           Data.Char (isDigit)
 
 import           System.Directory
@@ -16,6 +16,7 @@ import           System.FilePath.Posix (takeBaseName)
 import           System.IO (openTempFile)
 
 import           Data.List
+import           Data.Monoid(Any(..))
 
 import           Language.Haskell.Interpreter (eval, set, reset, setImportsQ, loadModules, liftIO,
                                      installedModulesInScope, languageExtensions, availableExtensions,
