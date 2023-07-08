@@ -22,7 +22,7 @@ description:         Mueval is a Haskell interpreter. It
 homepage:            https://github.com/gwern/mueval
 
 build-type:          Simple
-cabal-version:       >= 1.6
+cabal-version:       >= 1.8
 tested-with:         GHC==6.10.1
 
 data-files:          README.md, HCAR.tex
