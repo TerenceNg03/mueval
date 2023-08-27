@@ -1,0 +1,95 @@
+name:                mueval
+version:             0.9.3
+github:              "TerenceNg03/mueval"
+license:             BSD3
+license-file:        LICENSE
+author:              "Gwern <gwern@gwern.net>"
+maintainer:          "Terence Ng <stoicism03@gmail.com>"
+
+extra-source-files:
+- README.md
+- HCAR.tex
+
+# Metadata used when publishing your package
+synopsis:            Safely evaluate pure Haskell expressions
+category:            Development, Language
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Mueval is a Haskell interpreter. It
+                     uses the GHC API to evaluate arbitrary Haskell expressions.
+                     Importantly, mueval takes many precautions to defang and avoid \"evil\"
+                     code.  It uses resource limits, whitelisted modules and Safe Haskell,
+                     special Show instances for IO, threads, processes, and changes of directory
+                     to sandbox the Haskell code.
+                     .
+                     It is, in short, intended to be a standalone version of Lambdabot's famous
+                     evaluation functionality. For examples and explanations, please see the README file.
+                     .
+                     Mueval is POSIX-only.
+
+tested-with:         GHC==6.10.1
+
+dependencies:
+- base >= 4.5 && < 5
+- containers
+- directory
+- mtl
+- filepath
+- unix
+- process
+- hint
+- Cabal
+- show
+- extensible-exceptions
+- simple-reflect
+- QuickCheck
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+- -static
+
+library:
+  source-dirs: src
+
+executables:
+  mueval-core:
+    main:                Main
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - mueval
+  mueval:
+    main:                Watchdog
+    other-modules:       []
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - mueval
+
+tests:
+  mueval-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - mueval

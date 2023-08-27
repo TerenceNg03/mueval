@@ -4,7 +4,7 @@
 --   Even an out-of-control mueval will have trouble avoiding 'terminateProcess'.
 --   Note that it's too difficult to parse the user arguments to get the timeout,
 --   so we specify it as a constant which is a little more generous than the default.
-module Main where
+module Watchdog (main) where
 
 import Control.Concurrent (forkIO, threadDelay)
 import System.Environment (getArgs)
