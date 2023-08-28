@@ -2,10 +2,10 @@
 # tests
 
 # Save typing
-m () { echo "$@" && mueval --inferred-type --expression "$@"; }
+m () { echo "$@" && stack run -- --inferred-type --expression "$@"; }
 
 # Test whether it's around
-mueval &> /dev/null
+stack run &> /dev/null
 
 # Abort if any commands aren't successful
 set -e
