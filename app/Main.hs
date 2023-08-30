@@ -5,7 +5,7 @@
 module Main (main) where
 
 import Mueval.ArgsParse (interpreterOpts)
-import Mueval.Parallel
+import Mueval.Parallel (runMueval)
 import System.Environment
 import System.Exit
 
@@ -15,4 +15,4 @@ main = do
     -- force parse errors in main's thread
     case interpreterOpts args of
         Left (n, s) -> putStrLn s >> if n then exitSuccess else exitFailure
-        Right opts -> forkedMain $! opts
+        Right opts -> runMueval opts
